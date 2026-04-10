@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - Bitezy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+    <div id="loading-screen" style="position:fixed;inset:0;background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:40px;color:var(--primary);"></i>
+            <p style="margin-top:15px;color:var(--gray);">Loading...</p>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-logo"><i class="fa-solid fa-burger"></i> Bitezy</div>
+        <div class="nav-business">
+            <i class="fa-solid fa-user-shield" style="color:var(--primary)"></i> 
+            <span>Admin</span>
+        </div>
+    </nav>
+
+    <aside class="sidebar">
+        <div class="sidebar-menu">
+            <a href="#" data-section="dashboard" class="sidebar-link active" id="link-dashboard"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+            <a href="#" data-section="orders" class="sidebar-link" id="link-orders"><i class="fa-solid fa-receipt"></i> All Orders</a>
+            <a href="#" data-section="users" class="sidebar-link" id="link-users"><i class="fa-solid fa-users"></i> Users</a>
+            <a href="#" data-section="sellers" class="sidebar-link" id="link-sellers"><i class="fa-solid fa-store"></i> Sellers</a>
+            <a href="#" data-section="reviews" class="sidebar-link" id="link-reviews"><i class="fa-solid fa-comments"></i> Reviews</a>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="#" id="logoutLink" class="sidebar-link" style="color: var(--danger);"><i class="fa-solid fa-sign-out-alt"></i> Sign Out</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="section fade-in">
+            <h1>Admin Dashboard</h1>
+            <p class="subtitle">High-level overview of the entire platform.</p>
+            
+            <div class="stats-row">
+                <div class="mini-stat">
+                    <label>Total Revenue</label>
+                    <span class="value" id="stat-total-revenue">৳ 0</span>
+                    <span class="trend trend-up">All-time</span>
+                </div>
+                <div class="mini-stat">
+                    <label>Total Orders</label>
+                    <span class="value" id="stat-total-orders">0</span>
+                     <span class="trend" style="color:var(--gray);">Across all sellers</span>
+                </div>
+                <div class="mini-stat">
+                    <label>Registered Users</label>
+                    <span class="value" id="stat-total-users">0</span>
+                    <span class="trend" style="color:var(--gray);">Student accounts</span>
+                </div>
+                <div class="mini-stat">
+                    <label>Active Sellers</label>
+                    <span class="value" id="stat-total-sellers">0</span>
+                    <span class="trend" style="color:var(--gray);">Canteens & Carts</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Recent Global Orders</h3>
+                 <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Provider</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-orders-table-body">
+                        <!-- JS will populate this -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- All Orders Section -->
+        <div id="orders" class="section hidden fade-in">
+            <h1>All System Orders</h1>
+            <p class="subtitle">Browse and manage all orders across the platform.</p>
+            <div class="card">
+                <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Customer</th>
+                            <th>Provider</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-orders-table-body">
+                        <!-- JS will populate this -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- User Management Section -->
+        <div id="users" class="section hidden fade-in">
+            <h1>User Management</h1>
+            <p class="subtitle">Manage all registered student and staff accounts.</p>
+            <div class="card">
+                <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Hall</th>
+                            <th>Email</th>
+                            <th>User Type</th>
+                            <th>Phone</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <!-- JS will populate this -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Seller Management Section -->
+        <div id="sellers" class="section hidden fade-in">
+            <h1>Seller Management</h1>
+            <p class="subtitle">Manage all canteens, cafeterias, and food carts.</p>
+            <div class="card">
+                <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Shop Name</th>
+                            <th>Owner Name</th>
+                            <th>Location</th>
+                            <th>Total Orders</th>
+                            <th>Total Revenue</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sellers-table-body">
+                         <!-- JS will populate this -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="reviews" class="section hidden fade-in">
+            <h1>Reviews Management</h1>
+            <p class="subtitle">View and manage all customer reviews across the platform.</p>
+            
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div style="display:flex; gap:10px;">
+                        <select id="reviewFilter" class="form-control" style="width:auto; min-width:150px;" onchange="filterReviews()">
+                            <option value="all">All Providers</option>
+                        </select>
+                    </div>
+                    <span id="totalReviewsCount" style="color:var(--gray); font-size:14px;">Total: 0 reviews</span>
+                </div>
+                
+                <div id="reviews-table-container">
+                    <div style="text-align:center; padding:60px 20px; color:var(--gray);">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i>
+                        <p>Loading reviews...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

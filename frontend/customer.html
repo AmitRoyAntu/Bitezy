@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitezy - Modern</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/customer.css">
+</head>
+<body>
+    <div id="loading-screen" style="position:fixed;inset:0;background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:40px;color:var(--primary);"></i>
+            <p style="margin-top:15px;color:var(--gray);">Loading...</p>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-logo" onclick="showSection('browse')">
+            <i class="fa-solid fa-burger"></i> Bitezy
+        </div>
+        <div class="nav-right">
+            <div class="user-pill" onclick="showSection('profile')">
+                <div class="user-text">
+                    <span class="user-name" id="navbarName">Abir Hasan</span>
+                    <span class="user-hall" id="navbarHall">Dr. Qudrat-E-Khuda Hall</span>
+                </div>
+                <div class="user-avatar"><i class="fa-solid fa-user"></i></div>
+            </div>
+        </div>
+    </nav>
+
+    <aside class="sidebar">
+        <div class="nav-links">
+            <a onclick="showSection('browse')" class="sidebar-link active" id="link-browse">
+                <i class="fa-solid fa-compass"></i> Browse
+            </a>
+            <a onclick="showSection('cart')" class="sidebar-link" id="link-cart">
+                <i class="fa-solid fa-shopping-basket"></i> My Cart
+                <span class="badge" id="sidebarCartCount">0</span>
+            </a>
+            <a onclick="showSection('history')" class="sidebar-link" id="link-history">
+                <i class="fa-solid fa-clock"></i> History
+            </a>
+            <a onclick="showSection('profile')" class="sidebar-link" id="link-profile">
+                <i class="fa-solid fa-user-circle"></i> Profile
+            </a>
+        </div>
+        <div>
+            <a href="#" id="logoutLink" class="sidebar-link" style="color: var(--primary); background: #FFF0F0;">
+                <i class="fa-solid fa-sign-out-alt"></i> Logout
+            </a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <div id="browse" class="section fade-in">
+            <div class="hero-banner">
+                <h1>Hungry, Abir?</h1>
+                <p>Order fresh food from your favorite halls and canteens.</p>
+            </div>
+
+            <div class="browse-header">
+                <h2 style="font-size:20px;">Explore Providers</h2>
+                <div style="display:flex; gap:15px; flex-wrap:wrap;">
+                    <div class="search-box">
+                        <i class="fa-solid fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search canteens, cafeteria, food carts..." onkeyup="filterProviders()">
+                    </div>
+                    <div class="filter-tabs">
+                        <button class="tab-btn active" onclick="setCategory('All', this)">All</button>
+                        <button class="tab-btn" onclick="setCategory('Canteen', this)">Canteens</button>
+                        <button class="tab-btn" onclick="setCategory('Cafeteria', this)">Cafeteria</button>
+                        <button class="tab-btn" onclick="setCategory('Cart', this)">Street Food</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-container" id="hallList"></div>
+        </div>
+
+        <div id="menu-view" class="section hidden">
+            <div style="margin-bottom:20px; display:flex; align-items:center; gap:20px;">
+                <button onclick="showSection('browse')" style="background:white; border:1px solid var(--border); width:40px; height:40px; border-radius:50%; cursor:pointer;"><i class="fa-solid fa-arrow-left"></i></button>
+                <div>
+                    <h1 id="menuTitle" style="font-size:24px;">Restaurant Name</h1>
+                    <p style="color:var(--text-gray); font-size:14px;">Select items to add to your basket.</p>
+                </div>
+            </div>
+            
+            <div id="provider-details" class="provider-details-card">
+                <div class="provider-info-grid">
+                    <div class="provider-info-item">
+                        <i class="fa-solid fa-map-marker-alt"></i>
+                        <div>
+                            <label>Location</label>
+                            <span id="provider-location">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="provider-info-item">
+                        <i class="fa-solid fa-clock"></i>
+                        <div>
+                            <label>Delivery Time</label>
+                            <span id="provider-delivery-time">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="provider-info-item">
+                        <i class="fa-solid fa-star"></i>
+                        <div>
+                            <label>Rating</label>
+                            <span id="provider-rating">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="provider-info-item">
+                        <i class="fa-solid fa-info-circle"></i>
+                        <div>
+                            <label>Status</label>
+                            <span id="provider-status" class="status-badge">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="provider-description" class="provider-description" style="display:none;">
+                    <p></p>
+                </div>
+            </div>
+            
+            <div class="provider-tabs">
+                <button class="tab-btn active" onclick="switchProviderTab('menu', this)">Menu</button>
+                <button class="tab-btn" onclick="switchProviderTab('reviews', this)">Reviews <span id="reviewCountBadge">0</span></button>
+            </div>
+            
+            <div id="menu-tab" class="tab-content">
+                <div class="grid-container" id="foodGrid"></div>
+            </div>
+            
+            
+            <div id="reviews-tab" class="tab-content hidden">
+                <div class="reviews-container">
+                    <div class="reviews-header">
+                        <div class="average-rating">
+                            <span class="rating-value" id="avgRatingValue">0.0</span>
+                            <div class="stars" id="avgRatingStars"></div>
+                            <span class="review-count" id="totalReviewCount">0 reviews</span>
+                        </div>
+                        <button class="btn btn-primary" onclick="openReviewModal()">Write a Review</button>
+                    </div>
+                    <div id="reviewsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Modal -->
+        <div id="reviewModal" class="modal-overlay">
+            <div class="modal-content">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <h2>Write a Review</h2>
+                    <button class="btn btn-icon" onclick="closeReviewModal()"><i class="fa-solid fa-times"></i></button>
+                </div>
+                <form id="reviewForm" onsubmit="submitReview(event)">
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <div class="star-rating-input">
+                            <i class="fa-regular fa-star" data-rating="1" onclick="setRating(1)"></i>
+                            <i class="fa-regular fa-star" data-rating="2" onclick="setRating(2)"></i>
+                            <i class="fa-regular fa-star" data-rating="3" onclick="setRating(3)"></i>
+                            <i class="fa-regular fa-star" data-rating="4" onclick="setRating(4)"></i>
+                            <i class="fa-regular fa-star" data-rating="5" onclick="setRating(5)"></i>
+                        </div>
+                        <input type="hidden" id="reviewRating" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Your Review</label>
+                        <textarea id="reviewComment" class="form-control" rows="4" placeholder="Share your experience..." required></textarea>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="closeReviewModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="cart" class="section hidden">
+            <h1 style="margin-bottom:5px;">My Cart</h1>
+            <p style="color:var(--text-gray); margin-bottom:30px;">Items from <span id="cartProviderName" style="color:var(--primary); font-weight:700;">...</span></p>
+            
+            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px;">
+                <div class="list-card">
+                    <div id="cartItemsList"></div>
+                </div>
+
+                <div>
+                    <div class="list-card">
+                        <h3 style="margin-bottom:20px;">Order Summary</h3>
+                        
+                        <div style="margin-bottom:20px; background:#F8F9FA; padding:15px; border-radius:10px;">
+                            <label style="display:block; font-size:12px; font-weight:700; color:var(--text-gray); margin-bottom:10px;">DELIVERY METHOD</label>
+                            <label style="display:flex; align-items:center; gap:10px; margin-bottom:10px; cursor:pointer;">
+                                <input type="radio" name="orderType" value="Delivery" checked onchange="updateCartDisplay()"> 
+                                <span style="font-size:14px; font-weight:500;">Delivery (+30৳)</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                                <input type="radio" name="orderType" value="Pickup" onchange="updateCartDisplay()"> 
+                                <span style="font-size:14px; font-weight:500;">Self Pickup (Free)</span>
+                            </label>
+                        </div>
+
+                        <div class="ct-row"><span>Subtotal</span> <span id="cartSubtotal">৳ 0</span></div>
+                        <div class="ct-row"><span>Delivery Fee</span> <span id="cartFee">৳ 0</span></div>
+                        <div class="ct-row final"><span>Total</span> <span id="cartTotalDisplay">৳ 0</span></div>
+                        
+                        <button class="btn btn-primary" onclick="placeOrder()">Place Order <i class="fa-solid fa-arrow-right" style="margin-left:5px;"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="history" class="section hidden">
+            <h1 style="margin-bottom:30px;">Order History</h1>
+            <div class="list-card" style="padding:0;">
+                <div style="overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse;">
+                        <thead>
+                            <tr style="background:#F9FAFB; text-align:left;">
+                                <th style="padding:20px; font-size:12px; color:var(--text-gray);">ORDER ID</th>
+                                <th style="padding:20px; font-size:12px; color:var(--text-gray);">PROVIDER</th>
+                                <th style="padding:20px; font-size:12px; color:var(--text-gray);">ITEMS</th>
+                                <th style="padding:20px; font-size:12px; color:var(--text-gray);">TOTAL</th>
+                                <th style="padding:20px; font-size:12px; color:var(--text-gray);">STATUS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <tr><td colspan="5" style="text-align:center; padding:40px; color:#888;">Loading order history...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="profile" class="section hidden">
+            <div style="max-width:500px; margin:0 auto;">
+                <h1 style="text-align:center; margin-bottom:10px;">My Profile</h1>
+                <p style="text-align:center; color:var(--text-gray); margin-bottom:40px;">Manage your account details</p>
+                
+                <div class="list-card">
+                    <div style="text-align:center; margin-bottom:30px;">
+                        <div style="width:100px; height:100px; background:#F0F0F0; border-radius:50%; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; font-size:40px; color:#CCC;"><i class="fa-solid fa-user"></i></div>
+                    </div>
+                    
+                    <form id="profileForm" onsubmit="saveProfile(event)">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="pName" class="form-input" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="pEmail" class="form-input" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" id="pPhone" class="form-input" disabled>
+                        </div>
+                        <div class="form-group">
+                            <label>Buyer Type</label>
+                            <select id="pBuyerType" class="form-input" disabled>
+                                <option value="Student">Student</option>
+                                <option value="Teacher">Teacher</option>
+                                <option value="Staff">Staff</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="cuetIdGroup">
+                            <label>CUET ID</label>
+                            <input type="text" id="pCuetId" class="form-input" disabled>
+                        </div>
+                        <div class="form-group" id="deptGroup">
+                            <label>Department</label>
+                            <select id="pDepartment" class="form-input" disabled>
+                                <option value="">Not Applicable</option>
+                                <option value="CSE">CSE</option>
+                                <option value="CE">CE</option>
+                                <option value="EEE">EEE</option>
+                                <option value="ME">ME</option>
+                                <option value="ChE">ChE</option>
+                                <option value="MSE">MSE</option>
+                                <option value="ECE">ECE</option>
+                                <option value="ARCH">ARCH</option>
+                                <option value="URP">URP</option>
+                                <option value="MME">MME</option>
+                                <option value="NSE">NSE</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Current Residence (Delivery)</label>
+                            <select id="pHall" class="form-input" disabled>
+                                <option value="">Not Applicable</option>
+                                <option value="Dr. Qudrat-E-Khuda Hall">Dr. Qudrat-E-Khuda Hall</option>
+                                <option value="Shaheed Mohammad Shah Hall">Shaheed Mohammad Shah Hall</option>
+                                <option value="Shaheed Tareq Huda Hall">Shaheed Tareq Huda Hall</option>
+                                <option value="Kabi Kazi Nazrul Islam Hall">Kabi Kazi Nazrul Islam Hall</option>
+                                <option value="Muktijoddha Hall">Muktijoddha Hall</option>
+                                <option value="Shaheed Abu Sayeed Hall">Shaheed Abu Sayeed Hall</option>
+                                <option value="Sufia Kamal Hall">Sufia Kamal Hall</option>
+                                <option value="Begum Shamsennahar Khan Hall">Begum Shamsennahar Khan Hall</option>
+                                <option value="Taposhi Rabeya Hall">Taposhi Rabeya Hall</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display:flex; gap:15px; margin-top:30px;">
+                            <button type="button" id="btnEdit" class="btn btn-primary" style="background:#2D3436; box-shadow:none;" onclick="enableEdit()">Edit Details</button>
+                            <button type="submit" id="btnSave" class="btn btn-primary hidden">Save Changes</button>
+                            <button type="button" id="btnCancel" class="btn btn-primary hidden" style="background:white; color:var(--text-dark); border:1px solid var(--border); box-shadow:none;" onclick="cancelEdit()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <div id="toast" class="toast"><i class="fa-solid fa-check-circle" style="color:var(--success)"></i> <span>Success!</span></div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/customer.js"></script>
+</body>
+</html>

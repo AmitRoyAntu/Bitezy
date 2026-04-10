@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seller Portal - Canteen Owner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/seller.css">
+</head>
+<body>
+    <div id="loading-screen" style="position:fixed;inset:0;background:#fff;z-index:9999;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:40px;color:var(--primary);"></i>
+            <p style="margin-top:15px;color:var(--gray);">Loading...</p>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="nav-logo"><i class="fa-solid fa-burger"></i>Bitezy</div>
+        <div class="nav-business" id="navBusiness">
+            <i class="fa-solid fa-store-alt" style="color:var(--primary)"></i> 
+            <span id="sellerNameDisplay">Loading...</span>
+        </div>
+    </nav>
+
+    <aside class="sidebar">
+        <div class="sidebar-menu">
+            <a href="#" data-section="home" class="sidebar-link active" id="link-home"><i class="fa-solid fa-chart-pie"></i> Dashboard</a>
+            <a href="#" data-section="orders" class="sidebar-link" id="link-orders"><i class="fa-solid fa-receipt"></i> Orders</a>
+            <a href="#" data-section="menu" class="sidebar-link" id="link-menu"><i class="fa-solid fa-hamburger"></i> Menu</a>
+            <a href="#" data-section="reviews" class="sidebar-link" id="link-reviews"><i class="fa-solid fa-comments"></i> Reviews</a>
+        </div>
+        <div class="sidebar-bottom">
+            <a href="#" data-section="account" class="sidebar-link" id="link-account"><i class="fa-solid fa-cog"></i> Settings</a>
+            <a href="#" id="logoutLink" class="sidebar-link" style="color: var(--danger);"><i class="fa-solid fa-sign-out-alt"></i> Sign Out</a>
+        </div>
+    </aside>
+
+    <main class="main-content">
+
+        <div id="home" class="section fade-in">
+            <div class="welcome-box">
+                <div>
+                    <h1>Hello, Canteen Owner!</h1>
+                    <p style="color:var(--gray); margin-bottom:0;">Here's what's happening in your canteen today.</p>
+                </div>
+            </div>
+
+            <div class="home-grid">
+                <div class="left-col">
+                    <div class="stats-row">
+                        <div class="mini-stat">
+                            <label>Earnings (Today)</label>
+                            <span class="value" id="dash-today-earnings">৳ 0</span>
+                            <span class="trend" style="color:var(--gray);">Today's revenue</span>
+                        </div>
+                        <div class="mini-stat">
+                            <label>Total Orders</label>
+                            <span class="value" id="dash-total-orders">0</span>
+                            <span class="trend" style="color:var(--gray);" id="dash-pending-orders">Pending: 0</span>
+                        </div>
+                        <div class="mini-stat">
+                            <label>Total Reviews</label>
+                            <span class="value"><span id="dash-avg-rating">0.0</span> <span style="font-size:14px; color:var(--gray); font-weight:400;" id="dash-review-count">(0)</span></span>
+                            <span class="trend" style="color:var(--warning);">★★★★★</span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <h3>Weekly Sales Trend</h3>
+                            <select id="chartTimeframe" style="padding: 5px 10px; border-radius:8px; border:1px solid var(--border); font-size:13px; color:var(--dark); outline:none;" onchange="updateWeeklySalesChart(this.value)">
+                                <option value="7">Last 7 Days</option>
+                                <option value="30">Last 30 Days</option>
+                            </select>
+                        </div>
+                        <div class="chart-container" id="weeklySalesChart">
+                            <!-- Dynamic bars will be generated here -->
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                            <h3>Recent Orders</h3>
+                            <a href="#" onclick="showSection('orders')" style="font-size:13px; color:var(--primary); font-weight:600;">View All</a>
+                        </div>
+                        <table>
+                            <thead>
+                                <tr><th>ID</th><th>Customer</th><th>Type</th><th>Status</th></tr>
+                            </thead>
+                            <tbody id="recent-orders-body">
+                                <tr><td colspan="4" style="text-align:center; color:#888;">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="right-col">
+                    <div class="card">
+                        <h3>Order Distribution</h3>
+                        <div style="margin-top:25px;">
+                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;">
+                                <span><i class="fa-solid fa-truck" style="color:var(--info)"></i> Delivery</span>
+                                <span style="font-weight:700;" id="dash-delivery-percent">0%</span>
+                            </div>
+                            <div class="progress-container"><div class="progress-fill" id="dash-delivery-bar" style="width: 0%; background:var(--info)"></div></div>
+                        </div>
+                        <div style="margin-top:25px;">
+                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:5px;">
+                                <span><i class="fa-solid fa-shopping-bag" style="color:var(--purple)"></i> Pickup</span>
+                                <span style="font-weight:700;" id="dash-pickup-percent">0%</span>
+                            </div>
+                            <div class="progress-container"><div class="progress-fill" id="dash-pickup-bar" style="width: 0%; background:var(--purple)"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Top Selling Items</h3>
+                        <div class="top-items-list">
+                            <div class="item-rank">
+                                <div class="rank-number">1</div>
+                                <div style="flex:1">
+                                    <span style="font-size:14px; font-weight:600; color:var(--dark);">Spicy Chicken Burger</span><br>
+                                    <small style="color:var(--gray)">142 sold this week</small>
+                                </div>
+                            </div>
+                            <div class="item-rank">
+                                <div class="rank-number">2</div>
+                                <div style="flex:1">
+                                    <span style="font-size:14px; font-weight:600; color:var(--dark);">Cheesy Fries</span><br>
+                                    <small style="color:var(--gray)">98 sold this week</small>
+                                </div>
+                            </div>
+                            <div class="item-rank">
+                                <div class="rank-number">3</div>
+                                <div style="flex:1">
+                                    <span style="font-size:14px; font-weight:600; color:var(--dark);">Vanilla Milkshake</span><br>
+                                    <small style="color:var(--gray)">65 sold this week</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="orders" class="section hidden fade-in">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <div>
+                    <h1>Order Management</h1>
+                    <p class="subtitle" style="margin-bottom:0;">Manage incoming and active orders.</p>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="renderOrders('active')">Active Orders</button>
+                    <button class="btn btn-outline" onclick="renderOrders('history')">History</button>
+                </div>
+            </div>
+            
+            <div class="card">
+                <table style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Type</th>
+                            <th>Items</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="menu" class="section hidden fade-in">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <div>
+                    <h1>Menu Management</h1>
+                    <p class="subtitle" style="margin-bottom:0;">Add, edit or toggle availability of food items.</p>
+                </div>
+                <button class="btn btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> Add New Item</button>
+            </div>
+
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Price (BDT)</th>
+                            <th>Availability</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="menu-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="account" class="section hidden fade-in">
+            <h1>Settings</h1>
+            <p class="subtitle">Update your canteen profile details.</p>
+            <div class="card" style="max-width: 800px;">
+                <form id="profileForm" onsubmit="saveProfile(event)">
+                    <div class="form-row">
+                        <div class="form-group"><label>Owner Name</label><input type="text" id="sName" class="form-control" value="Abdul Karim" disabled></div>
+                        <div class="form-group"><label>Owner Email</label><input type="email" id="sEmail" class="form-control" value="owner@qk-hall.cuet.bd" disabled></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Phone Number</label><input type="tel" id="sPhone" class="form-control" value="01XXXXXXXXX" disabled></div>
+                        <div class="form-group"><label>Canteen Name</label><input type="text" id="sShopName" class="form-control" value="Dr. Qudrat-E-Khuda Dining" disabled></div>
+                    </div>
+                    <div class="form-group"><label>Location</label><input type="text" id="sLocation" class="form-control" value="CUET Main Campus" disabled></div>
+                    <div class="form-group"><label>Description / Notice</label><textarea id="sDescription" class="form-control" rows="3" disabled>Serving fresh breakfast, lunch and dinner for QK Hall residents.</textarea></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Opening Time</label><input type="time" id="sOpenTime" class="form-control" value="07:00" disabled></div>
+                        <div class="form-group"><label>Closing Time</label><input type="time" id="sCloseTime" class="form-control" value="23:00" disabled></div>
+                    </div>
+                    <div style="text-align:right; margin-top:20px;">
+                        <button type="button" id="btnEdit" class="btn btn-primary" style="background:#2D3436;" onclick="enableEdit()">Edit Details</button>
+                        <button type="submit" id="btnSave" class="btn btn-primary hidden">Save Changes</button>
+                        <button type="button" id="btnCancel" class="btn btn-outline hidden" onclick="cancelEdit()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="reviews" class="section hidden fade-in">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+                <div>
+                    <h1>Customer Reviews</h1>
+                    <p class="subtitle" style="margin-bottom:0;">See what customers are saying about your canteen.</p>
+                </div>
+            </div>
+            
+            <div class="review-stats-container">
+                <div class="review-stat-small">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-star"></i>
+                    </div>
+                    <div>
+                        <div class="review-stat-val" id="seller-avg-rating">0.0</div>
+                        <div class="review-stat-label">Average Rating</div>
+                    </div>
+                </div>
+                <div class="review-stat-small">
+                    <div class="stat-icon" style="background: #E3F2FD; color: #2196F3;">
+                        <i class="fa-solid fa-comment-alt"></i>
+                    </div>
+                    <div>
+                        <div class="review-stat-val" id="seller-total-reviews">0</div>
+                        <div class="review-stat-label">Total Reviews</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div id="seller-reviews-list"></div>
+            </div>
+        </div>
+
+    </main>
+
+    <div class="modal-overlay" id="itemModal">
+        <div class="modal-content">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                <h2 id="modalTitle" style="margin:0;">Add New Item</h2>
+                <button class="btn-icon btn btn-primary" onclick="closeModal()"><i class="fa-solid fa-times"></i></button>
+            </div>
+            
+            <form id="menuForm" onsubmit="saveItem(event)">
+                <input type="hidden" id="itemId"> 
+
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="itemImageUrl" class="form-control" placeholder="https://example.com/image.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label>Item Name</label>
+                    <input type="text" id="itemName" class="form-control" required placeholder="e.g. Beef Tehari">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="itemCategory" class="form-control">
+                            <option value="Rice">Rice</option>
+                            <option value="Fast Food">Fast Food</option>
+                            <option value="Drinks">Drinks</option>
+                            <option value="Snacks">Snacks</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Price (BDT)</label>
+                        <input type="number" id="itemPrice" class="form-control" required placeholder="0">
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Item</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"><i class="fa-solid fa-check-circle" style="color:var(--success)"></i> <span>Success!</span></div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/seller.js"></script>
+</body>
+</html>

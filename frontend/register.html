@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Bitezy</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/shared.css">
+    <link rel="stylesheet" href="css/register.css">
+</head>
+<body>
+    <div class="auth-container">
+        <a href="index.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+        
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1>Create Account</h1>
+                <p>Join Bitezy today</p>
+            </div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label">Select Account Type <span class="required">*</span></label>
+                    <div class="role-select">
+                        <div class="role-option active" data-role="buyer">
+                            <i class="fa-solid fa-user-graduate"></i>
+                            <span>Buyer</span>
+                        </div>
+                        <div class="role-option" data-role="seller">
+                            <i class="fa-solid fa-store"></i>
+                            <span>Seller</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="section-title"><i class="fa-solid fa-info-circle"></i> Basic Info</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Full Name <span class="required">*</span></label>
+                        <input type="text" id="regName" class="form-input" placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Email <span class="required">*</span></label>
+                            <input type="email" id="regEmail" class="form-input" placeholder="e.g. demo@cuet.ac.bd">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number <span class="required">*</span></label>
+                            <input type="tel" id="regPhone" class="form-input" placeholder="01XXXXXXXXX">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Password <span class="required">*</span></label>
+                            <input type="password" id="regPassword" class="form-input" placeholder="Create a password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password <span class="required">*</span></label>
+                            <input type="password" id="regConfirmPassword" class="form-input" placeholder="Confirm password">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="buyerFields" class="form-section">
+                    <div class="section-title"><i class="fa-solid fa-graduation-cap"></i> Academic Info</div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Buyer Type <span class="required">*</span></label>
+                            <select id="regBuyerType" class="form-select">
+                                <option value="">Select type</option>
+                                <option value="Student">Student</option>
+                                <option value="Teacher">Teacher</option>
+                                <option value="Staff">Staff</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CUET ID</label>
+                            <input type="text" id="regCuetId" class="form-input" placeholder="e.g. 2104XXX">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Department</label>
+                        <select id="regDepartment" class="form-select">
+                            <option value="">Select Department</option>
+                            <option value="CSE">CSE - Computer Science & Engineering</option>
+                            <option value="CE">CE - Civil Engineering</option>
+                            <option value="EEE">EEE - Electrical & Electronic Engineering</option>
+                            <option value="ME">ME - Mechanical Engineering</option>
+                            <option value="ChE">ChE - Chemical Engineering</option>
+                            <option value="MSE">MSE - Materials Science & Engineering</option>
+                            <option value="ECE">ECE - Electronics & Communication Engineering</option>
+                            <option value="ARCH">ARCH - Architecture</option>
+                            <option value="URP">URP - Urban & Regional Planning</option>
+                            <option value="MME">MME - Materials & Metallurgical Engineering</option>
+                            <option value="NSE">NSE - Naval Architecture & Marine Engineering</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Current Residence (Delivery)</label>
+                        <select id="regHall" class="form-select">
+                            <option value="">Select Hall</option>
+                            <option value="Dr. Qudrat-E-Khuda Hall">Dr. Qudrat-E-Khuda Hall</option>
+                            <option value="Shaheed Mohammad Shah Hall">Shaheed Mohammad Shah Hall</option>
+                            <option value="Shaheed Tareq Huda Hall">Shaheed Tareq Huda Hall</option>
+                            <option value="Kabi Kazi Nazrul Islam Hall">Kabi Kazi Nazrul Islam Hall</option>
+                            <option value="Muktijoddha Hall">Muktijoddha Hall</option>
+                            <option value="Shaheed Abu Sayeed Hall">Shaheed Abu Sayeed Hall</option>
+                            <option value="Sufia Kamal Hall">Sufia Kamal Hall</option>
+                            <option value="Begum Shamsennahar Khan Hall">Begum Shamsennahar Khan Hall</option>
+                            <option value="Taposhi Rabeya Hall">Taposhi Rabeya Hall</option>
+                            <option value="Teacher Dorm-1">Teacher Dormitory 1</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="sellerFields" class="form-section hidden">
+                    <div class="section-title"><i class="fa-solid fa-store-alt"></i> Business Info</div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Shop / Canteen Name <span class="required">*</span></label>
+                        <input type="text" id="regShopName" class="form-input" placeholder="e.g. Central Cafeteria">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Location <span class="required">*</span></label>
+                        <input type="text" id="regLocation" class="form-input" placeholder="e.g. CUET Main Campus, Near Library">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description</label>
+                        <input type="text" id="regDescription" class="form-input" placeholder="e.g. Rice, curry, snacks, beverages">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Opening Time <span class="required">*</span></label>
+                            <input type="time" id="regOpenTime" class="form-input" value="08:00">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Closing Time <span class="required">*</span></label>
+                            <input type="time" id="regCloseTime" class="form-input" value="20:00">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Account</button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="login.html">Sign in</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/register.js"></script>
+</body>
+</html>
