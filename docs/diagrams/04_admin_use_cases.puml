@@ -1,0 +1,91 @@
+@startuml Bitezy - Admin Use Case Diagram
+
+title Bitezy — Admin Use Cases
+
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor #EBF5FB
+    BorderColor #2980B9
+    ArrowColor #2980B9
+}
+skinparam actor {
+    BackgroundColor #D6EAF8
+    BorderColor #2980B9
+}
+
+actor "Admin" as Admin
+
+rectangle "Bitezy — Admin Portal" {
+
+    package "Authentication" {
+        usecase "Login with\nAdmin Credentials" as UC_Login
+        usecase "Sign Out" as UC_Logout
+    }
+
+    package "Platform Dashboard" {
+        usecase "View Platform Dashboard" as UC_Dashboard
+        usecase "View Total Revenue\n(All-time)" as UC_Revenue
+        usecase "View Total Orders\n(Across All Sellers)" as UC_TotalOrders
+        usecase "View Registered Users\nCount" as UC_UsersCount
+        usecase "View Active Sellers\nCount" as UC_SellersCount
+        usecase "View Recent Global\nOrders Table" as UC_RecentOrders
+    }
+
+    package "Order Management" {
+        usecase "View All System Orders\n(All Sellers & Customers)" as UC_AllOrders
+        usecase "Filter Orders by\nSeller / Status" as UC_FilterOrders
+    }
+
+    package "User Management" {
+        usecase "View All Registered\nUsers" as UC_ViewUsers
+        usecase "View User Details\n(Name, Hall, Email, Type, Phone)" as UC_UserDetails
+        usecase "Delete User Account" as UC_DeleteUser
+    }
+
+    package "Seller Management" {
+        usecase "View All Sellers\n(Canteens, Cafeterias, Carts)" as UC_ViewSellers
+        usecase "View Seller Details\n(Shop, Owner, Location, Revenue)" as UC_SellerDetails
+        usecase "Delete Seller Account" as UC_DeleteSeller
+    }
+
+    package "Reviews Management" {
+        usecase "View All Platform Reviews" as UC_AllReviews
+        usecase "Filter Reviews by\nProvider" as UC_FilterReviews
+        usecase "Delete Inappropriate Review" as UC_DeleteReview
+    }
+}
+
+' Auth
+Admin --> UC_Login
+Admin --> UC_Logout
+
+' Dashboard
+Admin --> UC_Dashboard
+UC_Dashboard ..> UC_Revenue : <<include>>
+UC_Dashboard ..> UC_TotalOrders : <<include>>
+UC_Dashboard ..> UC_UsersCount : <<include>>
+UC_Dashboard ..> UC_SellersCount : <<include>>
+UC_Dashboard ..> UC_RecentOrders : <<include>>
+
+' Orders
+Admin --> UC_AllOrders
+UC_AllOrders ..> UC_FilterOrders : <<extend>>
+
+' Users
+Admin --> UC_ViewUsers
+UC_ViewUsers ..> UC_UserDetails : <<include>>
+Admin --> UC_DeleteUser
+
+' Sellers
+Admin --> UC_ViewSellers
+UC_ViewSellers ..> UC_SellerDetails : <<include>>
+Admin --> UC_DeleteSeller
+
+' Reviews
+Admin --> UC_AllReviews
+UC_AllReviews ..> UC_FilterReviews : <<extend>>
+Admin --> UC_DeleteReview
+
+@enduml

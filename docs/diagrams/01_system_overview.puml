@@ -1,0 +1,97 @@
+@startuml Bitezy - System Overview Use Case Diagram
+
+title Bitezy Smart Canteen Platform — System Overview
+
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor #FFF8F0
+    BorderColor #E67E22
+    ArrowColor #E67E22
+}
+skinparam actor {
+    BackgroundColor #FDEBD0
+    BorderColor #E67E22
+}
+
+actor "Guest" as Guest
+actor "Customer\n(Student / Teacher / Staff)" as Customer
+actor "Seller\n(Canteen / Cafeteria / Food Cart)" as Seller
+actor "Admin" as Admin
+
+rectangle "Bitezy Platform" {
+
+    package "Authentication" {
+        usecase "Register Account" as UC_Register
+        usecase "Login" as UC_Login
+        usecase "Logout" as UC_Logout
+    }
+
+    package "Customer Features" {
+        usecase "Browse Food Providers" as UC_Browse
+        usecase "Search & Filter Providers" as UC_Search
+        usecase "View Provider Menu" as UC_ViewMenu
+        usecase "Manage Cart" as UC_Cart
+        usecase "Place Order" as UC_Order
+        usecase "Track Order Status" as UC_Track
+        usecase "View Order History" as UC_History
+        usecase "Write a Review" as UC_Review
+        usecase "View Reviews" as UC_ViewReview
+        usecase "Edit Profile" as UC_Profile
+    }
+
+    package "Seller Features" {
+        usecase "View Dashboard" as UC_Dashboard
+        usecase "Manage Orders" as UC_ManageOrders
+        usecase "Manage Menu Items" as UC_ManageMenu
+        usecase "View Customer Reviews" as UC_SellerReviews
+        usecase "Update Shop Settings" as UC_ShopSettings
+    }
+
+    package "Admin Features" {
+        usecase "View Platform Dashboard" as UC_AdminDash
+        usecase "Manage All Orders" as UC_AdminOrders
+        usecase "Manage Users" as UC_AdminUsers
+        usecase "Manage Sellers" as UC_AdminSellers
+        usecase "Manage All Reviews" as UC_AdminReviews
+    }
+}
+
+' Guest
+Guest --> UC_Register
+Guest --> UC_Login
+
+' Customer
+Customer --> UC_Login
+Customer --> UC_Logout
+Customer --> UC_Browse
+Customer --> UC_Search
+Customer --> UC_ViewMenu
+Customer --> UC_Cart
+Customer --> UC_Order
+Customer --> UC_Track
+Customer --> UC_History
+Customer --> UC_Review
+Customer --> UC_ViewReview
+Customer --> UC_Profile
+
+' Seller
+Seller --> UC_Login
+Seller --> UC_Logout
+Seller --> UC_Dashboard
+Seller --> UC_ManageOrders
+Seller --> UC_ManageMenu
+Seller --> UC_SellerReviews
+Seller --> UC_ShopSettings
+
+' Admin
+Admin --> UC_Login
+Admin --> UC_Logout
+Admin --> UC_AdminDash
+Admin --> UC_AdminOrders
+Admin --> UC_AdminUsers
+Admin --> UC_AdminSellers
+Admin --> UC_AdminReviews
+
+@enduml

@@ -1,0 +1,95 @@
+@startuml Bitezy - Customer Use Case Diagram
+
+title Bitezy — Customer Use Cases
+
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor #F0FFF4
+    BorderColor #27AE60
+    ArrowColor #27AE60
+}
+skinparam actor {
+    BackgroundColor #D5F5E3
+    BorderColor #27AE60
+}
+
+actor "Guest\n(Unauthenticated)" as Guest
+actor "Customer\n(Student / Teacher / Staff)" as Customer
+
+rectangle "Bitezy — Customer Module" {
+
+    package "Account Management" {
+        usecase "Register with\nName, Email & Role" as UC_Register
+        usecase "Login with\nEmail & Password" as UC_Login
+        usecase "View & Edit Profile\n(Name, Phone, Hall, Dept)" as UC_Profile
+        usecase "Logout" as UC_Logout
+    }
+
+    package "Discovery" {
+        usecase "Browse Food Providers" as UC_Browse
+        usecase "Filter by Category\n(Canteen / Cafeteria / Cart)" as UC_Filter
+        usecase "Search by Name" as UC_Search
+        usecase "View Provider Details\n(Location, Timing, Rating, Status)" as UC_ProviderDetails
+        usecase "View Provider Menu" as UC_Menu
+    }
+
+    package "Ordering" {
+        usecase "Add Items to Cart" as UC_AddCart
+        usecase "Update Item Quantity" as UC_UpdateCart
+        usecase "Select Delivery Method\n(Delivery +30৳ / Self Pickup)" as UC_DeliveryMethod
+        usecase "View Order Summary\n(Subtotal, Delivery Fee, Total)" as UC_Summary
+        usecase "Place Order" as UC_PlaceOrder
+    }
+
+    package "Post-Order" {
+        usecase "View Order History" as UC_History
+        usecase "Track Order Status\n(Pending → Preparing → Delivered)" as UC_Track
+    }
+
+    package "Reviews" {
+        usecase "View Provider Reviews" as UC_ViewReviews
+        usecase "Submit a Review\n(Star Rating + Comment)" as UC_SubmitReview
+    }
+}
+
+' Guest actions
+Guest --> UC_Register
+Guest --> UC_Login
+
+' Customer — Account
+Customer --> UC_Login
+Customer --> UC_Profile
+Customer --> UC_Logout
+
+' Customer — Discovery
+Customer --> UC_Browse
+Customer --> UC_Filter
+Customer --> UC_Search
+Customer --> UC_ProviderDetails
+Customer --> UC_Menu
+
+' Ordering dependencies
+Customer --> UC_AddCart
+UC_AddCart ..> UC_UpdateCart : <<include>>
+Customer --> UC_DeliveryMethod
+Customer --> UC_Summary
+UC_Summary ..> UC_DeliveryMethod : <<include>>
+Customer --> UC_PlaceOrder
+UC_PlaceOrder ..> UC_Summary : <<include>>
+
+' Post-Order
+Customer --> UC_History
+Customer --> UC_Track
+
+' Reviews
+Customer --> UC_ViewReviews
+Customer --> UC_SubmitReview
+
+' Include relationships
+UC_Browse ..> UC_Filter : <<extend>>
+UC_Browse ..> UC_Search : <<extend>>
+UC_Menu ..> UC_ProviderDetails : <<include>>
+
+@enduml

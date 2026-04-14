@@ -1,0 +1,95 @@
+@startuml Bitezy - Seller Use Case Diagram
+
+title Bitezy — Seller (Canteen / Cafeteria / Food Cart Owner) Use Cases
+
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor #FFF0F5
+    BorderColor #8E44AD
+    ArrowColor #8E44AD
+}
+skinparam actor {
+    BackgroundColor #F5EEF8
+    BorderColor #8E44AD
+}
+
+actor "Seller\n(Canteen / Cafeteria / Food Cart Owner)" as Seller
+
+rectangle "Bitezy — Seller Portal" {
+
+    package "Authentication" {
+        usecase "Login with\nEmail & Password" as UC_Login
+        usecase "Sign Out" as UC_Logout
+    }
+
+    package "Dashboard" {
+        usecase "View Summary Dashboard" as UC_Dashboard
+        usecase "View Today's Earnings" as UC_Earnings
+        usecase "View Total Orders &\nPending Count" as UC_OrderStats
+        usecase "View Average Rating &\nTotal Reviews" as UC_RatingStats
+        usecase "View Weekly Sales\nTrend Chart" as UC_SalesChart
+        usecase "View Order Distribution\n(Delivery vs. Pickup %)" as UC_Distribution
+        usecase "View Recent Orders" as UC_RecentOrders
+    }
+
+    package "Order Management" {
+        usecase "View Active Orders" as UC_ActiveOrders
+        usecase "View Order History" as UC_OrderHistory
+        usecase "Update Order Status\n(Pending → Preparing → Ready → Delivered)" as UC_UpdateStatus
+    }
+
+    package "Menu Management" {
+        usecase "View All Menu Items" as UC_ViewMenu
+        usecase "Add New Menu Item\n(Name, Category, Price, Image)" as UC_AddItem
+        usecase "Edit Existing Menu Item" as UC_EditItem
+        usecase "Toggle Item Availability\n(Available / Unavailable)" as UC_ToggleItem
+        usecase "Delete Menu Item" as UC_DeleteItem
+    }
+
+    package "Reviews" {
+        usecase "View Customer Reviews" as UC_Reviews
+        usecase "View Average Rating\n& Total Review Count" as UC_ReviewStats
+    }
+
+    package "Settings" {
+        usecase "View Shop Profile\n(Name, Location, Timings)" as UC_ViewProfile
+        usecase "Edit Shop Details\n(Description, Hours, Contact)" as UC_EditProfile
+    }
+}
+
+' Auth
+Seller --> UC_Login
+Seller --> UC_Logout
+
+' Dashboard
+Seller --> UC_Dashboard
+UC_Dashboard ..> UC_Earnings : <<include>>
+UC_Dashboard ..> UC_OrderStats : <<include>>
+UC_Dashboard ..> UC_RatingStats : <<include>>
+UC_Dashboard ..> UC_SalesChart : <<include>>
+UC_Dashboard ..> UC_Distribution : <<include>>
+UC_Dashboard ..> UC_RecentOrders : <<include>>
+
+' Orders
+Seller --> UC_ActiveOrders
+Seller --> UC_OrderHistory
+Seller --> UC_UpdateStatus
+
+' Menu
+Seller --> UC_ViewMenu
+Seller --> UC_AddItem
+Seller --> UC_EditItem
+Seller --> UC_ToggleItem
+Seller --> UC_DeleteItem
+
+' Reviews
+Seller --> UC_Reviews
+UC_Reviews ..> UC_ReviewStats : <<include>>
+
+' Settings
+Seller --> UC_ViewProfile
+Seller --> UC_EditProfile
+
+@enduml
