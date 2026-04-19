@@ -118,28 +118,9 @@
 
                     <div class="card">
                         <h3>Top Selling Items</h3>
-                        <div class="top-items-list">
-                            <div class="item-rank">
-                                <div class="rank-number">1</div>
-                                <div style="flex:1">
-                                    <span style="font-size:14px; font-weight:600; color:var(--dark);">Spicy Chicken Burger</span><br>
-                                    <small style="color:var(--gray)">142 sold this week</small>
-                                </div>
-                            </div>
-                            <div class="item-rank">
-                                <div class="rank-number">2</div>
-                                <div style="flex:1">
-                                    <span style="font-size:14px; font-weight:600; color:var(--dark);">Cheesy Fries</span><br>
-                                    <small style="color:var(--gray)">98 sold this week</small>
-                                </div>
-                            </div>
-                            <div class="item-rank">
-                                <div class="rank-number">3</div>
-                                <div style="flex:1">
-                                    <span style="font-size:14px; font-weight:600; color:var(--dark);">Vanilla Milkshake</span><br>
-                                    <small style="color:var(--gray)">65 sold this week</small>
-                                </div>
-                            </div>
+                        <div class="top-items-list" id="top-selling-list">
+                            <!-- Dynamic content will be injected here -->
+                            <p style="color:var(--gray); text-align:center; padding:20px;">Loading data...</p>
                         </div>
                     </div>
                 </div>
@@ -300,6 +281,11 @@
                         <label>Price (BDT)</label>
                         <input type="number" id="itemPrice" class="form-control" required placeholder="0">
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="itemDesc" class="form-control" rows="3" placeholder="Describe your item (ingredients, taste, etc.)"></textarea>
                 </div>
 
                 <div class="modal-actions">

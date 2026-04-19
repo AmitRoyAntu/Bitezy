@@ -1,56 +1,40 @@
-// DATABASE SIMULATION
-// Use localStorage to persist data across sessions and pages
-const getDB = (key) => {
-    try {
-        return JSON.parse(localStorage.getItem(key)) || [];
-    } catch (e) {
-        console.error('Error reading from localStorage:', e);
-        return [];
-    }
-};
-
-const saveDB = (key, data) => {
-    try {
-        localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-        console.error('Error saving to localStorage:', e);
-        showToast('Error saving data. Storage may be full.', 'error');
-    }
-};
-
-// Initialize orders DB if it doesn't exist
-if (!localStorage.getItem('foodhub_orders')) {
-    try {
-        localStorage.setItem('foodhub_orders', JSON.stringify([]));
-    } catch (e) {
-        console.error('Failed to initialize orders DB:', e);
-    }
-}
-
 // DATA
 let providers = [];
 let foodItems = [];
 
 async function loadData() {
-    providers = await DataService.getProviders();
-    foodItems = await DataService.getMenu();
-    
-    const existingOrders = getDB('foodhub_orders');
-    if (existingOrders.length === 0) {
-        const orders = await DataService.getOrders();
-        saveDB('foodhub_orders', orders);
+    try {
+        providers = await DataService.getProviders();
+        foodItems = await DataService.getMenu(null, true);
+        renderProviders();
+    } catch (error) {
+        showToast('Error loading data', 'error');
     }
-    
-    renderProviders();
 }
 
 if (typeof DataService !== 'undefined') {
     loadData();
 }
 
+let providerItems = []; // Current menu items for the opened provider
+
+
+
 // APP STATE
-let cart = [];
+let cart = (function() {
+    try {
+        return JSON.parse(localStorage.getItem('bitezy_cart')) || [];
+    } catch (e) {
+        return [];
+    }
+})();
+
+function saveCart() {
+    localStorage.setItem('bitezy_cart', JSON.stringify(cart));
+}
+
 let currentProvider = "";
+
 let activeCat = "All";
 let currentReviews = [];
 let currentRating = 0;
@@ -89,9 +73,13 @@ function renderProviders() {
 function renderMenuGrid() {
     const grid = document.getElementById('foodGrid');
     grid.innerHTML = '';
-    const itemsForProvider = foodItems.filter(item => item.provider === currentProvider);
+    
+    if (providerItems.length === 0) {
+        grid.innerHTML = '<p style="color:#888; grid-column:1/-1; text-align:center;">No items available in this menu.</p>';
+        return;
+    }
 
-    itemsForProvider.forEach(i => {
+    providerItems.forEach(i => {
         const cartItem = cart.find(c => c.name === i.name);
         const qty = cartItem ? cartItem.qty : 0;
         const actionHtml = qty > 0 
@@ -118,6 +106,7 @@ function renderMenuGrid() {
             </div>`;
     });
 }
+
 
 function renderCart() {
     const listEl = document.getElementById('cartItemsList');
@@ -170,47 +159,50 @@ function renderCart() {
     totalEl.innerText = `৳ ${subtotal + deliveryFee}`;
 }
 
-function renderHistory() {
+async function renderHistory() {
     const tbody = document.getElementById('historyTableBody');
-    const orders = getDB('foodhub_orders');
-    // Assuming a hardcoded user for now
-    const user = Auth ? Auth.getUser() : { name: 'Guest' };
-    const userOrders = orders.filter(o => o.customer.name === user.name).sort((a, b) => b.id - a.id);
-
-    tbody.innerHTML = '';
-    if (userOrders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 60px 20px;">' +
-            '<i class="fa-solid fa-receipt" style="font-size:48px;color:#ddd;margin-bottom:15px;display:block;"></i>' +
-            '<h3 style="color:var(--gray);margin-bottom:10px;">No orders yet</h3>' +
-            '<p style="color:#999;">Your order history will appear here</p>' +
-            '</td></tr>';
-        return;
-    }
-
-    userOrders.forEach(order => {
-        let statusClass = '';
-        let statusText = order.status.replace('_', ' ').toUpperCase();
-
-        switch (order.status) {
-            case 'PENDING': statusClass = 'bs-pending'; break;
-            case 'PREPARING': statusClass = 'bs-prep'; break;
-            case 'ON_THE_WAY': statusClass = 'bs-way'; break;
-            case 'READY': statusClass = 'bs-way'; statusText = 'READY FOR PICKUP'; break; // Use same color for READY
-            case 'DELIVERED': statusClass = 'bs-done'; break;
-            case 'PICKED_UP': statusClass = 'bs-done'; break;
-            case 'CANCELLED': statusClass = 'bs-cancelled'; break; // Use a new class for cancelled
-            default: statusClass = 'bs-prep';
-        }
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Loading history...</td></tr>';
+    
+    try {
+        const userOrders = await DataService.getOrders();
         
-        tbody.innerHTML += `
-            <tr style="border-bottom:1px solid var(--border);">
-                <td style="padding:20px; font-weight:600;">#${order.id}</td>
-                <td style="padding:20px;">${order.provider}</td>
-                <td style="padding:20px; color:var(--text-gray);">${order.items.map(i => `${i.qty}x ${i.name}`).join(', ')}</td>
-                <td style="padding:20px; font-weight:700;">৳ ${order.total}</td>
-                <td style="padding:20px;"><span class="badge-status ${statusClass}">${statusText}</span></td>
-            </tr>`;
-    });
+        tbody.innerHTML = '';
+        if (userOrders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 60px 20px;">' +
+                '<i class="fa-solid fa-receipt" style="font-size:48px;color:#ddd;margin-bottom:15px;display:block;"></i>' +
+                '<h3 style="color:var(--gray);margin-bottom:10px;">No orders yet</h3>' +
+                '<p style="color:#999;">Your order history will appear here</p>' +
+                '</td></tr>';
+            return;
+        }
+
+        userOrders.forEach(order => {
+            let statusClass = '';
+            let statusText = order.status.replace('_', ' ').toUpperCase();
+
+            switch (order.status) {
+                case 'PENDING': statusClass = 'bs-pending'; break;
+                case 'PREPARING': statusClass = 'bs-prep'; break;
+                case 'ON_THE_WAY': statusClass = 'bs-way'; break;
+                case 'READY': statusClass = 'bs-way'; statusText = 'READY FOR PICKUP'; break;
+                case 'DELIVERED': statusClass = 'bs-done'; break;
+                case 'PICKED_UP': statusClass = 'bs-done'; break;
+                case 'CANCELLED': statusClass = 'bs-cancelled'; break;
+                default: statusClass = 'bs-prep';
+            }
+            
+            tbody.innerHTML += `
+                <tr style="border-bottom:1px solid var(--border);">
+                    <td style="padding:20px; font-weight:600;">#${order._id ? order._id.slice(-6) : 'N/A'}</td>
+                    <td style="padding:20px;">${order.provider ? order.provider.name : 'Unknown'}</td>
+                    <td style="padding:20px; color:var(--text-gray);">${order.items.map(i => `${i.qty}x ${i.name}`).join(', ')}</td>
+                    <td style="padding:20px; font-weight:700;">৳ ${order.total}</td>
+                    <td style="padding:20px;"><span class="badge-status ${statusClass}">${statusText}</span></td>
+                </tr>`;
+        });
+    } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: red;">Error loading orders</td></tr>';
+    }
 }
 
 
@@ -223,21 +215,31 @@ function setCategory(c, btn) {
     renderProviders();
 }
 
-function openMenu(name) {
+async function openMenu(name) {
     if (cart.length > 0 && cart[0].provider !== name) {
         if (confirm(`You have items from ${cart[0].provider} in your cart. Clear cart and switch to ${name}?`)) {
             cart = [];
+            saveCart();
         } else {
             return;
         }
     }
     currentProvider = name;
+
     document.getElementById('menuTitle').textContent = name;
     
     const provider = providers.find(p => p.name === name);
     if (provider) {
-        loadReviews(provider.id);
+        // Fetch specific data for this provider
+        loadReviews(provider._id);
         loadProviderDetails(provider);
+        
+        try {
+            providerItems = await DataService.getMenuByProvider(provider._id, true);
+        } catch (error) {
+            console.error('Error loading menu:', error);
+            providerItems = [];
+        }
     }
     
     renderMenuGrid();
@@ -249,6 +251,7 @@ function openMenu(name) {
     document.querySelectorAll('.provider-tabs .tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelector('.provider-tabs .tab-btn:first-child').classList.add('active');
 }
+
 
 function loadProviderDetails(provider) {
     document.getElementById('provider-location').textContent = provider.location || 'N/A';
@@ -292,51 +295,65 @@ function updateQty(name, price, delta, img) {
         showToast("Added to Cart");
     }
     
+    
+    saveCart();
     renderMenuGrid();
     renderCart();
 }
 
+
 function removeItem(index) {
     cart.splice(index, 1);
+    saveCart();
     renderCart();
     renderMenuGrid(); // Update menu to show the add button again
 }
 
-function placeOrder() {
+
+async function placeOrder() {
     if (cart.length === 0) {
         showToast("Your cart is empty!", 'warning');
         return;
     }
 
-    const allOrders = getDB('foodhub_orders');
     const deliveryType = document.querySelector('input[name="orderType"]:checked').value;
     const deliveryFee = deliveryType === 'Delivery' ? 30 : 0;
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+    
+    // Find provider ID
+    const provider = providers.find(p => p.name === cart[0].provider);
 
-    const newOrder = {
-        id: Date.now(), // Unique ID
-        customer: {
-            name: document.getElementById('navbarName').innerText,
-            hall: document.getElementById('navbarHall').innerText
-        },
-        provider: cart[0].provider,
-        items: cart,
+    const orderData = {
+        provider: provider ? provider._id : null,
+        items: cart.map(item => {
+            const menuEntry = foodItems.find(f => f.name === item.name);
+            return {
+                menuItem: menuEntry ? menuEntry._id : null,
+                name: item.name,
+                price: item.price,
+                qty: item.qty,
+                img: item.img
+            };
+        }),
         subtotal: subtotal,
         deliveryFee: deliveryFee,
         total: subtotal + deliveryFee,
-        type: deliveryType,
-        status: 'PENDING' // Initial status
+        type: deliveryType.toLowerCase(),
+        deliveryAddress: deliveryType === 'Delivery' ? 'CUET Campus' : '' 
     };
 
-    allOrders.push(newOrder);
-    saveDB('foodhub_orders', allOrders);
+    try {
+        await DataService.createOrder(orderData);
+        cart = [];
+        saveCart();
+        renderCart();
+        showToast("Order Placed Successfully!");
+        renderHistory();
+        showSection('history');
+    } catch (error) {
 
-    cart = [];
-    renderCart();
-    showToast("Order Placed Successfully!");
-    
-    showSection('history');
-    showSection('history');
+        showToast(error.message || "Error placing order", "error");
+    }
 }
 
 // NAVIGATION & UTILS
@@ -388,7 +405,7 @@ function cancelEdit() {
     document.getElementById('btnCancel').classList.add('hidden');
 }
 
-function saveProfile(e) {
+async function saveProfile(e) {
     e.preventDefault();
     
     const updatedData = {
@@ -397,16 +414,28 @@ function saveProfile(e) {
         buyerType: document.getElementById('pBuyerType').value,
         cuetId: document.getElementById('pCuetId').value,
         department: document.getElementById('pDepartment').value,
-        hall: document.getElementById('pHall').value
+        residence: document.getElementById('pHall').value
     };
     
-    if (Auth.updateUserInDB(updatedData)) {
-        document.getElementById('navbarName').innerText = updatedData.name;
-        document.getElementById('navbarHall').innerText = updatedData.hall;
-        cancelEdit();
-        showToast("Profile Saved");
-    } else {
-        showToast("Error saving profile", "error");
+    try {
+        const response = await DataService.updateProfile(updatedData);
+        if (response && response.token) {
+            // Update local user data
+            const user = Auth.getUser();
+            const updatedUser = { 
+                ...user, 
+                ...updatedData, 
+                id: response._id 
+            };
+            Auth.login(updatedUser, response.token); // Re-login with new token/data
+            
+            document.getElementById('navbarName').innerText = updatedUser.name;
+            document.getElementById('navbarHall').innerText = updatedUser.residence || '';
+            cancelEdit();
+            showToast("Profile Saved Successfully!");
+        }
+    } catch (error) {
+        showToast(error.message || "Error saving profile", "error");
     }
 }
 
@@ -420,55 +449,60 @@ function debounce(func, wait) {
     };
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (!Auth.isAuthenticated()) {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Hide loading screen initially
+    const loadingScreen = document.getElementById('loading-screen');
+    
+    // Initialize Auth (fetches profile from DB)
+    const user = await Auth.init();
+    
+    if (!user || !Auth.isAuthenticated()) {
         window.location.href = 'login.html?redirect=customer.html';
         return;
     }
     
-    const user = Auth.getUser();
-    if (user) {
-        document.getElementById('navbarName').textContent = user.name || 'User';
-        document.getElementById('navbarHall').textContent = user.hall || '';
-        
-        if (document.getElementById('pName')) {
-            document.getElementById('pName').value = user.name || '';
-        }
-        if (document.getElementById('pEmail')) {
-            document.getElementById('pEmail').value = user.email || '';
-        }
-        if (document.getElementById('pPhone')) {
-            document.getElementById('pPhone').value = user.phone || '';
-        }
-        if (document.getElementById('pBuyerType')) {
-            document.getElementById('pBuyerType').value = user.buyerType || 'Student';
-            const isStudent = user.buyerType === 'Student';
-            document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
-            document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
-        }
-        if (document.getElementById('pCuetId')) {
-            document.getElementById('pCuetId').value = user.cuetId || '';
-        }
-        if (document.getElementById('pDepartment')) {
-            document.getElementById('pDepartment').value = user.department || '';
-        }
-        if (document.getElementById('pHall')) {
-            document.getElementById('pHall').value = user.hall || '';
-        }
-        
-        document.getElementById('pBuyerType').addEventListener('change', function() {
-            const isStudent = this.value === 'Student';
-            document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
-            document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
-        });
-        
-        const heroTitle = document.querySelector('#browse .hero-banner h1');
-        if (heroTitle) {
-            heroTitle.textContent = 'Hungry, ' + (user.name.split(' ')[0] || 'there') + '?';
-        }
+    // Populate UI with fetched user data
+    document.getElementById('navbarName').textContent = user.name || 'User';
+    document.getElementById('navbarHall').textContent = user.residence || '';
+    
+    if (document.getElementById('pName')) {
+        document.getElementById('pName').value = user.name || '';
+    }
+    if (document.getElementById('pEmail')) {
+        document.getElementById('pEmail').value = user.email || '';
+    }
+    if (document.getElementById('pPhone')) {
+        document.getElementById('pPhone').value = user.phone || '';
+    }
+    if (document.getElementById('pBuyerType')) {
+        document.getElementById('pBuyerType').value = user.buyerType || 'Student';
+        const isStudent = user.buyerType === 'Student';
+        document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
+        document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
+    }
+    if (document.getElementById('pCuetId')) {
+        document.getElementById('pCuetId').value = user.cuetId || '';
+    }
+    if (document.getElementById('pDepartment')) {
+        document.getElementById('pDepartment').value = user.department || '';
+    }
+    if (document.getElementById('pHall')) {
+        document.getElementById('pHall').value = user.residence || '';
     }
     
-    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('pBuyerType').addEventListener('change', function() {
+        const isStudent = this.value === 'Student';
+        document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
+        document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
+    });
+    
+    const heroTitle = document.querySelector('#browse .hero-banner h1');
+    if (heroTitle) {
+        heroTitle.textContent = 'Hungry, ' + (user.name.split(' ')[0] || 'there') + '?';
+    }
+
+    if (loadingScreen) loadingScreen.style.display = 'none';
+
     
     document.getElementById('logoutLink').addEventListener('click', function(e) {
         e.preventDefault();
@@ -518,8 +552,8 @@ function renderReviews() {
     container.innerHTML = currentReviews.map(review => `
         <div class="review-item">
             <div class="review-header">
-                <span class="reviewer-name">${review.buyerName}</span>
-                <span class="review-time">${formatTimeAgo(review.timestamp)}</span>
+                <span class="reviewer-name">${review.buyer ? review.buyer.name : 'Guest'}</span>
+                <span class="review-time">${formatTimeAgo(review.createdAt)}</span>
             </div>
             <div class="stars">${renderStarRating(review.rating)}</div>
             <p class="review-text">${review.comment}</p>
@@ -611,32 +645,22 @@ async function submitReview(e) {
         return;
     }
     
-    const user = Auth.getUser();
     const provider = providers.find(p => p.name === currentProvider);
     
-    const newReview = {
-        id: Date.now(),
-        providerId: provider ? provider.id : 0,
-        providerName: currentProvider,
-        buyerName: user ? user.name : 'Guest',
-        buyerId: user ? user.id : 'guest',
+    const reviewData = {
+        provider: provider ? provider._id : null,
         rating: rating,
-        comment: comment,
-        timestamp: new Date().toISOString()
+        comment: comment
     };
     
-    const allReviews = await DataService.getReviews();
-    allReviews.push(newReview);
-    
     try {
-        localStorage.setItem('bitezy_reviews', JSON.stringify(allReviews));
+        const newReview = await DataService.createReview(reviewData);
         currentReviews.unshift(newReview);
         renderReviews();
         closeReviewModal();
         showToast('Review submitted successfully!');
     } catch (err) {
-        console.error('Error saving review:', err);
-        showToast('Error submitting review');
+        showToast(err.message || 'Error submitting review', 'error');
     }
 }
 

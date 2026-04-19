@@ -1,0 +1,11 @@
+{
+  "name": "bitezy2",
+  "version": "1.0.0",
+  "description": "Bitezy2 Food Delivery Platform",
+  "scripts": {
+    "start": "cd backend && node server.js",
+    "dev": "cd backend && npx nodemon server.js",
+    "seed": "cd backend && node utils/seedData.js",
+    "install:backend": "cd backend && npm install"
+  }
+}

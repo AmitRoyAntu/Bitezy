@@ -19,19 +19,22 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         return;
     }
     
-    const user = await DataService.validateLogin(email, password);
-    
-    if (user) {
-        localStorage.setItem('bitezy_user', JSON.stringify(user));
+    try {
+        const response = await DataService.request('/auth/login', 'POST', { email, password });
         
-        if (user.role === 'buyer') {
-            window.location.href = 'customer.html';
-        } else if (user.role === 'seller') {
-            window.location.href = 'seller.html';
-        } else if (user.role === 'admin') {
-            window.location.href = 'admin.html';
+        if (response && response.token) {
+            // response contains _id, name, email, role, token
+            const userData = {
+                id: response._id,
+                name: response.name,
+                email: response.email,
+                role: response.role
+            };
+            Auth.login(userData, response.token);
+        } else {
+            alert('Login failed. Please check your credentials.');
         }
-    } else {
-        alert('Invalid email or password. Try: amit@cuet.ac.bd / demo123');
+    } catch (error) {
+        alert(error.message || 'Login failed. Please try again.');
     }
 });

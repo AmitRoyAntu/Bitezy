@@ -1,123 +1,135 @@
 const DataService = {
-    baseUrl: '../data',
+    baseUrl: 'http://localhost:8002/api',
     
-    cache: {},
-    
-    async load(file) {
-        if (this.cache[file]) {
-            return this.cache[file];
+    async getAuthToken() {
+        return localStorage.getItem('bitezy_token');
+    },
+
+    async request(endpoint, method = 'GET', body = null) {
+        const token = await this.getAuthToken();
+        const options = {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        };
+        
+        if (token) {
+            options.headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        if (body) {
+            options.body = JSON.stringify(body);
         }
         
         try {
-            const response = await fetch(`${this.baseUrl}/${file}.json`);
-            if (!response.ok) {
-                throw new Error(`Failed to load ${file}`);
-            }
+            const response = await fetch(`${this.baseUrl}${endpoint}`, options);
             const data = await response.json();
-            this.cache[file] = data;
+            if (!response.ok) {
+                throw new Error(data.message || 'API request failed');
+            }
             return data;
         } catch (error) {
-            console.error(`Error loading ${file}:`, error);
-            return null;
+            console.error(`API Error (${endpoint}):`, error);
+            throw error;
         }
-    },
-    
-    async getUsers() {
-        const data = await this.load('users');
-        return data ? data.users : [];
     },
     
     async getProviders() {
-        const data = await this.load('providers');
-        return data ? data.providers : [];
+        return await this.request('/providers');
     },
     
-    async getMenu() {
-        const data = await this.load('menu');
-        return data ? data.menu : [];
+    async getMenu(vendorId = null, availableOnly = false) {
+        let query = vendorId ? `?vendor=${vendorId}` : '';
+        if (availableOnly) {
+            query += (query ? '&' : '?') + 'available=true';
+        }
+        return await this.request(`/menu${query}`);
     },
     
+    async getMenuByProvider(providerId) {
+        return await this.request(`/menu?vendor=${providerId}`);
+    },
+
     async getOrders() {
-        const data = await this.load('orders');
-        return data ? data.orders : [];
+        return await this.request('/orders/myorders');
+    },
+
+    async updateProfile(profileData) {
+        return await this.request('/auth/profile', 'PUT', profileData);
+    },
+
+    async createOrder(orderData) {
+        return await this.request('/orders', 'POST', orderData);
+    },
+
+    async getAllOrders() {
+        return await this.request('/orders');
     },
     
-    // Get items by provider
-    async getMenuByProvider(providerName) {
-        const menu = await this.getMenu();
-        return menu.filter(item => item.provider === providerName);
+    async getMenuByProvider(providerId, availableOnly = false) {
+        const query = `?vendor=${providerId}${availableOnly ? '&available=true' : ''}`;
+        return await this.request(`/menu${query}`);
     },
-    
-    // Get user by email
-    async getUserByEmail(email) {
-        const users = await this.getUsers();
-        return users.find(u => u.email === email);
+
+    async createMenuItem(data) {
+        return await this.request('/menu', 'POST', data);
     },
-    
-    // Validate login
-    async validateLogin(email, password) {
-        const user = await this.getUserByEmail(email);
-        if (user && user.password === password) {
-            return {
-                id: user.id,
-                name: user.name,
-                email: user.email,
-                phone: user.phone,
-                role: user.role,
-                buyerType: user.buyerType || null,
-                cuetId: user.cuetId || null,
-                department: user.department || null,
-                hall: user.hall || null,
-                shopName: user.shopName || null,
-                location: user.location || null,
-                loggedIn: true
-            };
-        }
-        return null;
+
+    async updateMenuItem(id, data) {
+        return await this.request(`/menu/${id}`, 'PUT', data);
     },
-    
-    // Get all reviews
-    async getReviews() {
-        let reviews = [];
-        
-        const data = await this.load('reviews');
-        if (data && data.reviews) {
-            reviews = [...data.reviews];
-        }
-        
-        const storedReviews = localStorage.getItem('bitezy_reviews');
-        if (storedReviews) {
-            try {
-                const userReviews = JSON.parse(storedReviews);
-                reviews = [...reviews, ...userReviews];
-            } catch (e) {
-                console.error('Error parsing stored reviews:', e);
-            }
-        }
-        
-        return reviews;
+
+    async deleteMenuItem(id) {
+        return await this.request(`/menu/${id}`, 'DELETE');
     },
-    
-    // Get reviews by provider ID
+
     async getReviewsByProvider(providerId) {
-        const reviews = await this.getReviews();
-        return reviews.filter(r => r.providerId === providerId);
+
+        return await this.request(`/reviews/provider/${providerId}`);
     },
-    
-    // Get reviews by provider name
-    async getReviewsByProviderName(providerName) {
-        const reviews = await this.getReviews();
-        return reviews.filter(r => r.providerName === providerName);
+
+
+    async createReview(reviewData) {
+        return await this.request('/reviews', 'POST', reviewData);
     },
     
     // Calculate average rating for a provider
     async getProviderRating(providerId) {
-        const reviews = await this.getReviewsByProvider(providerId);
+        const reviews = await this.getReviews(providerId);
         if (reviews.length === 0) return 0;
         const sum = reviews.reduce((acc, r) => acc + r.rating, 0);
         return (sum / reviews.length).toFixed(1);
+    },
+
+    // Seller-specific
+    async getSellerOrders() {
+        return await this.request('/orders/seller');
+    },
+
+    async updateOrderStatus(orderId, status) {
+        return await this.request(`/orders/${orderId}/status`, 'PUT', { status });
+    },
+
+    async getMyProvider() {
+        return await this.request('/providers/myprovider');
+    },
+
+    // Admin-specific
+    async getUsers() {
+        return await this.request('/users');
+    },
+
+    async blockUser(userId, isBlocked) {
+        return await this.request(`/users/${userId}/block`, 'PUT', { isBlocked });
+    },
+
+    // Alias for compatibility
+    async getReviews(providerId) {
+        return await this.getReviewsByProvider(providerId);
     }
 };
+
 
 // Export for use
 window.DataService = DataService;

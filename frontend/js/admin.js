@@ -1,303 +1,4 @@
-const getDB = (key) => {
-    try {
-        return JSON.parse(localStorage.getItem(key)) || [];
-    } catch (e) {
-        return [];
-    }
-};
-
-async function loadUsersFromDB() {
-    if (typeof DataService !== 'undefined') {
-        return await DataService.getUsers();
-    }
-    return [];
-}
-
-async function loadSellersFromDB() {
-    const users = await loadUsersFromDB();
-    return users.filter(u => u.role === 'seller');
-}
-
-async function initializeOrdersDB() {
-    if (!localStorage.getItem('foodhub_orders') || JSON.parse(localStorage.getItem('foodhub_orders')).length === 0) {
-        try {
-            const response = await fetch('../data/orders.json');
-            const data = await response.json();
-            localStorage.setItem('foodhub_orders', JSON.stringify(data.orders || []));
-        } catch (e) {
-            console.error('Error loading orders from JSON:', e);
-            localStorage.setItem('foodhub_orders', JSON.stringify([]));
-        }
-    }
-}
-
-
-// RENDER FUNCTIONS
-
-async function renderDashboard() {
-    const orders = getDB('foodhub_orders');
-    
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-    const totalOrders = orders.length;
-
-    const usersList = await loadUsersFromDB();
-    const buyers = usersList.filter(u => u.role === 'buyer');
-    const totalUsers = buyers.length;
-    
-    const sellers = await loadSellersFromDB();
-    const totalSellers = sellers.length;
-
-    // Update stat cards
-    document.getElementById('stat-total-revenue').innerText = `৳ ${totalRevenue.toLocaleString()}`;
-    document.getElementById('stat-total-orders').innerText = totalOrders;
-    document.getElementById('stat-total-users').innerText = totalUsers;
-    document.getElementById('stat-total-sellers').innerText = totalSellers;
-
-    // Render recent orders table
-    const tbody = document.getElementById('recent-orders-table-body');
-    tbody.innerHTML = '';
-    const recentOrders = orders.slice(-5).reverse(); // Get last 5 orders
-
-    if (recentOrders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #888;">No orders yet.</td></tr>';
-        return;
-    }
-
-    recentOrders.forEach(order => {
-        let statusClass = '';
-        let statusLabel = order.status.replace(/_/g, ' ');
-        switch(order.status) {
-            case 'PENDING': statusClass = 'status-pending'; break;
-            case 'PREPARING': statusClass = 'status-preparing'; break;
-            case 'ON_THE_WAY': case 'READY': statusClass = 'status-ontheway'; break;
-            case 'DELIVERED': case 'PICKED_UP': statusClass = 'status-delivered'; break;
-            case 'CANCELLED': statusClass = 'status-cancelled'; break;
-        }
-        tbody.innerHTML += `
-            <tr>
-                <td><strong>#${order.id}</strong></td>
-                <td>${order.customer.name}</td>
-                <td>${order.provider}</td>
-                <td style="font-weight:600;">৳${order.total}</td>
-                <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
-            </tr>
-        `;
-    });
-}
-
-function renderAllOrders() {
-    const orders = getDB('foodhub_orders').reverse();
-    const tbody = document.getElementById('all-orders-table-body');
-    tbody.innerHTML = '';
-
-    if (orders.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #888;">No orders in the system.</td></tr>';
-        return;
-    }
-
-    orders.forEach(order => {
-        let statusClass = '';
-        let statusLabel = order.status.replace(/_/g, ' ');
-        switch(order.status) {
-            case 'PENDING': statusClass = 'status-pending'; break;
-            case 'PREPARING': statusClass = 'status-preparing'; break;
-            case 'ON_THE_WAY': case 'READY': statusClass = 'status-ontheway'; break;
-            case 'DELIVERED': case 'PICKED_UP': statusClass = 'status-delivered'; break;
-            case 'CANCELLED': statusClass = 'status-cancelled'; break;
-        }
-        const itemsSummary = order.items.map(i => `${i.qty}x ${i.name}`).join(', ');
-        tbody.innerHTML += `
-            <tr>
-                <td><strong>#${order.id}</strong></td>
-                <td>${order.customer.name}</td>
-                <td>${order.provider}</td>
-                <td style="color:#555;">${itemsSummary}</td>
-                <td style="font-weight:600;">৳${order.total}</td>
-                <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
-            </tr>
-        `;
-    });
-}
-
-async function renderUsers() {
-    const users = await loadUsersFromDB();
-    const tbody = document.getElementById('users-table-body');
-    tbody.innerHTML = '';
-    
-    const buyers = users.filter(u => u.role === 'buyer');
-
-    if (buyers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: #888;">No users found.</td></tr>';
-        return;
-    }
-
-    buyers.forEach(user => {
-        tbody.innerHTML += `
-            <tr>
-                <td><strong>${user.name}</strong></td>
-                <td>${user.hall || 'N/A'}</td>
-                <td>${user.email}</td>
-                <td>${user.buyerType || 'N/A'}</td>
-                <td>${user.phone || 'N/A'}</td>
-                <td>
-                    <button class="btn-icon" style="color:var(--danger)" title="Block User"><i class="fa-solid fa-user-slash"></i></button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-async function renderSellers() {
-    const sellers = await loadSellersFromDB();
-    const orders = getDB('foodhub_orders');
-    const tbody = document.getElementById('sellers-table-body');
-    tbody.innerHTML = '';
-
-    if (sellers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #888;">No sellers configured.</td></tr>';
-        return;
-    }
-
-    sellers.forEach(seller => {
-        const sellerOrders = orders.filter(o => o.provider === seller.shopName);
-        const totalRevenue = sellerOrders.reduce((sum, o) => sum + o.total, 0);
-        const totalOrders = sellerOrders.length;
-
-        tbody.innerHTML += `
-             <tr>
-                <td><strong>${seller.shopName}</strong></td>
-                <td>${seller.name}</td>
-                <td><span style="background:#f1f2f6; padding:4px 8px; border-radius:4px; font-size:12px;">${seller.location || 'N/A'}</span></td>
-                <td>${totalOrders}</td>
-                <td style="font-weight:600;">৳${totalRevenue.toLocaleString()}</td>
-                <td>
-                    <button class="btn-icon" style="color:var(--danger)" title="Deactivate Seller"><i class="fa-solid fa-store-slash"></i></button>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-// REVIEWS MANAGEMENT
-let allReviews = [];
-let currentReviewFilter = 'all';
-
-async function renderAllReviews() {
-    const container = document.getElementById('reviews-table-container');
-    container.innerHTML = '<div style="text-align:center; padding:60px 20px; color:var(--gray);"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i><p>Loading reviews...</p></div>';
-    
-    allReviews = await DataService.getReviews();
-    populateProviderFilter(allReviews);
-    displayReviews();
-}
-
-function populateProviderFilter(reviews) {
-    const select = document.getElementById('reviewFilter');
-    const providers = [...new Set(reviews.map(r => r.providerName))].sort();
-    
-    let html = '<option value="all">All Providers</option>';
-    providers.forEach(provider => {
-        html += `<option value="${provider}">${provider}</option>`;
-    });
-    select.innerHTML = html;
-}
-
-function filterReviews() {
-    currentReviewFilter = document.getElementById('reviewFilter').value;
-    displayReviews();
-}
-
-function displayReviews() {
-    const container = document.getElementById('reviews-table-container');
-    let filteredReviews = allReviews;
-    
-    if (currentReviewFilter !== 'all') {
-        filteredReviews = allReviews.filter(r => r.providerName === currentReviewFilter);
-    }
-    
-    document.getElementById('totalReviewsCount').textContent = `Total: ${filteredReviews.length} reviews`;
-    
-    if (filteredReviews.length === 0) {
-        container.innerHTML = `
-            <div style="text-align:center; padding:60px 20px; color:var(--gray);">
-                <i class="fa-solid fa-comment-slash" style="font-size:48px; margin-bottom:15px; display:block; opacity:0.5;"></i>
-                <p>No reviews found.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    const sortedReviews = filteredReviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-    container.innerHTML = `
-        <table style="width:100%">
-            <thead>
-                <tr>
-                    <th>Reviewer</th>
-                    <th>Provider</th>
-                    <th>Rating</th>
-                    <th>Comment</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${sortedReviews.map(review => {
-                    const stars = Array(5).fill(0).map((_, i) => 
-                        i < review.rating ? '<i class="fa-solid fa-star" style="color:var(--warning);"></i>' : '<i class="fa-regular fa-star" style="color:var(--border);"></i>'
-                    ).join('');
-                    
-                    const date = new Date(review.timestamp).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                    });
-                    
-                    const comment = review.comment.length > 80 
-                        ? review.comment.substring(0, 80) + '...' 
-                        : review.comment;
-                    
-                    return `
-                        <tr>
-                            <td><strong>${review.buyerName}</strong></td>
-                            <td>${review.providerName}</td>
-                            <td style="color:var(--warning);">${stars}</td>
-                            <td style="color:#555; max-width:300px;">${comment}</td>
-                            <td>${date}</td>
-                            <td>
-                                <button class="btn-icon" title="Delete Review" onclick="deleteReview(${review.id})" style="color:var(--danger);">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-        </table>
-    `;
-}
-
-async function deleteReview(reviewId) {
-    if (!confirm('Are you sure you want to delete this review? This action cannot be undone.')) {
-        return;
-    }
-    
-    allReviews = allReviews.filter(r => r.id !== reviewId);
-    
-    const storedReviews = localStorage.getItem('bitezy_reviews');
-    if (storedReviews) {
-        try {
-            let userReviews = JSON.parse(storedReviews);
-            userReviews = userReviews.filter(r => r.id !== reviewId);
-            localStorage.setItem('bitezy_reviews', JSON.stringify(userReviews));
-        } catch (e) {
-            console.error('Error updating stored reviews:', e);
-        }
-    }
-    
-    displayReviews();
-    showToast('Review deleted successfully', 'success');
-}
+// ADMIN DASHBOARD - API-CONNECTED VERSION
 
 function showToast(message, type = 'success') {
     const toast = document.createElement('div');
@@ -320,6 +21,271 @@ function showToast(message, type = 'success') {
     setTimeout(() => {
         toast.remove();
     }, 3000);
+}
+
+// RENDER FUNCTIONS
+
+async function renderDashboard() {
+    try {
+        const orders = await DataService.getAllOrders();
+        const users = await DataService.getUsers();
+        
+        const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+        const totalOrders = orders.length;
+
+        const buyers = users.filter(u => u.role === 'buyer');
+        const totalUsers = buyers.length;
+        
+        const sellers = users.filter(u => u.role === 'seller');
+        const totalSellers = sellers.length;
+
+        // Update stat cards
+        document.getElementById('stat-total-revenue').innerText = `৳ ${totalRevenue.toLocaleString()}`;
+        document.getElementById('stat-total-orders').innerText = totalOrders;
+        document.getElementById('stat-total-users').innerText = totalUsers;
+        document.getElementById('stat-total-sellers').innerText = totalSellers;
+
+        // Render recent orders table
+        const tbody = document.getElementById('recent-orders-table-body');
+        tbody.innerHTML = '';
+        const recentOrders = orders.slice(0, 5); // Controller already sorts by -createdAt
+
+        if (recentOrders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px; color: #888;">No orders yet.</td></tr>';
+            return;
+        }
+
+        recentOrders.forEach(order => {
+            let statusClass = '';
+            let statusLabel = order.status.replace(/_/g, ' ');
+            switch(order.status) {
+                case 'PENDING': statusClass = 'status-pending'; break;
+                case 'PREPARING': statusClass = 'status-preparing'; break;
+                case 'ON_THE_WAY': case 'READY': statusClass = 'status-ontheway'; break;
+                case 'DELIVERED': case 'PICKED_UP': statusClass = 'status-delivered'; break;
+                case 'CANCELLED': statusClass = 'status-cancelled'; break;
+            }
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>#${order._id.slice(-6)}</strong></td>
+                    <td>${order.customer ? order.customer.name : 'Unknown'}</td>
+                    <td>${order.provider ? order.provider.name : 'Unknown'}</td>
+                    <td style="font-weight:600;">৳${order.total}</td>
+                    <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                </tr>
+            `;
+        });
+    } catch (error) {
+        console.error('Error rendering dashboard:', error);
+    }
+}
+
+async function renderAllOrders() {
+    try {
+        const orders = await DataService.getAllOrders();
+        const tbody = document.getElementById('all-orders-table-body');
+        tbody.innerHTML = '';
+
+        if (orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #888;">No orders in the system.</td></tr>';
+            return;
+        }
+
+        orders.forEach(order => {
+            let statusClass = '';
+            let statusLabel = order.status.replace(/_/g, ' ');
+            switch(order.status) {
+                case 'PENDING': statusClass = 'status-pending'; break;
+                case 'PREPARING': statusClass = 'status-preparing'; break;
+                case 'ON_THE_WAY': case 'READY': statusClass = 'status-ontheway'; break;
+                case 'DELIVERED': case 'PICKED_UP': statusClass = 'status-delivered'; break;
+                case 'CANCELLED': statusClass = 'status-cancelled'; break;
+            }
+            const itemsSummary = order.items.map(i => `${i.qty}x ${i.name}`).join(', ');
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>#${order._id.slice(-6)}</strong></td>
+                    <td>${order.customer ? order.customer.name : 'Unknown'}</td>
+                    <td>${order.provider ? order.provider.name : 'Unknown'}</td>
+                    <td style="color:#555;">${itemsSummary}</td>
+                    <td style="font-weight:600;">৳${order.total}</td>
+                    <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
+                </tr>
+            `;
+        });
+    } catch (error) {
+        console.error('Error rendering all orders:', error);
+    }
+}
+
+async function renderUsers() {
+    try {
+        const users = await DataService.getUsers();
+        const tbody = document.getElementById('users-table-body');
+        tbody.innerHTML = '';
+        
+        const buyers = users.filter(u => u.role === 'buyer');
+
+        if (buyers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 40px; color: #888;">No users found.</td></tr>';
+            return;
+        }
+
+        buyers.forEach(user => {
+            tbody.innerHTML += `
+                <tr>
+                    <td><strong>${user.name}</strong></td>
+                    <td>${user.residence || 'N/A'}</td>
+                    <td>${user.email}</td>
+                    <td>${user.buyerType || 'N/A'}</td>
+                    <td>${user.phone || 'N/A'}</td>
+                    <td>
+                        <button class="btn-icon" style="color:var(--danger)" title="Block User" onclick="toggleUserBlock('${user._id}', ${user.isBlocked})">
+                            <i class="fa-solid fa-${user.isBlocked ? 'user-check' : 'user-slash'}"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (error) {
+        console.error('Error rendering users:', error);
+    }
+}
+
+async function renderSellers() {
+    try {
+        const users = await DataService.getUsers();
+        const orders = await DataService.getAllOrders();
+        const tbody = document.getElementById('sellers-table-body');
+        tbody.innerHTML = '';
+
+        const sellers = users.filter(u => u.role === 'seller');
+
+        if (sellers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #888;">No sellers configured.</td></tr>';
+            return;
+        }
+
+        sellers.forEach(seller => {
+            const sellerOrders = orders.filter(o => o.provider && o.provider.name === seller.shopName);
+            const totalRevenue = sellerOrders.reduce((sum, o) => sum + o.total, 0);
+            const totalOrders = sellerOrders.length;
+
+            tbody.innerHTML += `
+                 <tr>
+                    <td><strong>${seller.shopName || 'N/A'}</strong></td>
+                    <td>${seller.name}</td>
+                    <td><span style="background:#f1f2f6; padding:4px 8px; border-radius:4px; font-size:12px;">${seller.location || 'N/A'}</span></td>
+                    <td>${totalOrders}</td>
+                    <td style="font-weight:600;">৳${totalRevenue.toLocaleString()}</td>
+                    <td>
+                        <button class="btn-icon" style="color:var(--danger)" title="Deactivate Seller"><i class="fa-solid fa-store-slash"></i></button>
+                    </td>
+                </tr>
+            `;
+        });
+    } catch (error) {
+        console.error('Error rendering sellers:', error);
+    }
+}
+
+// REVIEWS MANAGEMENT
+let allReviews = [];
+let currentReviewFilter = 'all';
+
+async function renderAllReviews() {
+    const container = document.getElementById('reviews-table-container');
+    container.innerHTML = '<div style="text-align:center; padding:60px 20px; color:var(--gray);"><i class="fa-solid fa-spinner fa-spin" style="font-size:24px;"></i><p>Loading reviews...</p></div>';
+    
+    try {
+        allReviews = await DataService.request('/reviews'); // Need to ensure /api/reviews exists for admin
+        populateProviderFilter(allReviews);
+        displayReviews();
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+        container.innerHTML = '<div style="text-align:center; padding:20px; color:red;">Error loading reviews</div>';
+    }
+}
+
+function populateProviderFilter(reviews) {
+    const select = document.getElementById('reviewFilter');
+    if (!select) return;
+    const providers = [...new Set(reviews.map(r => r.provider ? r.provider.name : 'Unknown'))].sort();
+    
+    let html = '<option value="all">All Providers</option>';
+    providers.forEach(provider => {
+        html += `<option value="${provider}">${provider}</option>`;
+    });
+    select.innerHTML = html;
+}
+
+function filterReviews() {
+    currentReviewFilter = document.getElementById('reviewFilter').value;
+    displayReviews();
+}
+
+function displayReviews() {
+    const container = document.getElementById('reviews-table-container');
+    let filteredReviews = allReviews;
+    
+    if (currentReviewFilter !== 'all') {
+        filteredReviews = allReviews.filter(r => r.provider && r.provider.name === currentReviewFilter);
+    }
+    
+    document.getElementById('totalReviewsCount').textContent = `Total: ${filteredReviews.length} reviews`;
+    
+    if (filteredReviews.length === 0) {
+        container.innerHTML = `
+            <div style="text-align:center; padding:60px 20px; color:var(--gray);">
+                <i class="fa-solid fa-comment-slash" style="font-size:48px; margin-bottom:15px; display:block; opacity:0.5;"></i>
+                <p>No reviews found.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = `
+        <table style="width:100%">
+            <thead>
+                <tr>
+                    <th>Reviewer</th>
+                    <th>Provider</th>
+                    <th>Rating</th>
+                    <th>Comment</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${filteredReviews.map(review => {
+                    const stars = Array(5).fill(0).map((_, i) => 
+                        i < review.rating ? '<i class="fa-solid fa-star" style="color:var(--warning);"></i>' : '<i class="fa-regular fa-star" style="color:var(--border);"></i>'
+                    ).join('');
+                    
+                    const date = new Date(review.createdAt).toLocaleDateString();
+                    
+                    return `
+                        <tr>
+                            <td><strong>${review.buyer ? review.buyer.name : 'Unknown'}</strong></td>
+                            <td>${review.provider ? review.provider.name : 'Unknown'}</td>
+                            <td style="color:var(--warning);">${stars}</td>
+                            <td style="color:#555; max-width:300px;">${review.comment}</td>
+                            <td>${date}</td>
+                        </tr>
+                    `;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+async function toggleUserBlock(userId, currentStatus) {
+    try {
+        await DataService.blockUser(userId, !currentStatus);
+        showToast(`User ${!currentStatus ? 'blocked' : 'unblocked'} successfully`);
+        renderUsers();
+    } catch (error) {
+        showToast(error.message || 'Error updating user status', 'danger');
+    }
 }
 
 // NAVIGATION
@@ -352,22 +318,24 @@ function showSection(sectionId) {
 
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', async () => {
-    if (!Auth.isAuthenticated()) {
-        window.location.href = 'login.html?redirect=admin.html';
-        return;
-    }
+    // Show loading screen initially
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) loadingScreen.style.display = 'flex';
+
+    // Initialize Auth (fetches profile from DB)
+    const user = await Auth.init();
     
-    const user = Auth.getUser();
-    if (user && user.role !== 'admin') {
-        alert('Access denied. Admin only.');
-        window.location.href = 'index.html';
+    if (!user || user.role !== 'admin') {
+        if (!Auth.isAuthenticated()) {
+            window.location.href = 'login.html?redirect=admin.html';
+        } else {
+            alert('Access denied. Admin only.');
+            window.location.href = 'index.html';
+        }
         return;
     }
 
-    // Initialize global data
-    await initializeOrdersDB();
-    
-    document.getElementById('loading-screen').style.display = 'none';
+    if (loadingScreen) loadingScreen.style.display = 'none';
     
     document.getElementById('logoutLink').addEventListener('click', function(e) {
         e.preventDefault();
@@ -383,3 +351,4 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     showSection('dashboard');
 });
+

@@ -19,7 +19,7 @@ roleOptions.forEach(option => {
     });
 });
 
-document.getElementById('registerForm').addEventListener('submit', function(e) {
+document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
@@ -53,31 +53,42 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
     if (hasError) return;
     
     const userData = {
-        name: name,
-        email: email,
-        phone: phone,
-        role: role,
+        name,
+        email,
+        phone,
+        password,
+        role,
         buyerType: role === 'buyer' ? document.getElementById('regBuyerType').value : null,
         cuetId: role === 'buyer' ? document.getElementById('regCuetId').value.trim() : null,
         department: role === 'buyer' ? document.getElementById('regDepartment').value : null,
-        hall: role === 'buyer' ? document.getElementById('regHall').value : null,
+        residence: role === 'buyer' ? document.getElementById('regHall').value : null,
         shopName: role === 'seller' ? document.getElementById('regShopName').value.trim() : null,
         location: role === 'seller' ? document.getElementById('regLocation').value.trim() : null,
         description: role === 'seller' ? document.getElementById('regDescription').value.trim() : null,
         openTime: role === 'seller' ? document.getElementById('regOpenTime').value : null,
-        closeTime: role === 'seller' ? document.getElementById('regCloseTime').value : null,
-        loggedIn: true
+        closeTime: role === 'seller' ? document.getElementById('regCloseTime').value : null
     };
     
-    localStorage.setItem('bitezy_user', JSON.stringify(userData));
-    alert('Registration Successful! Redirecting...');
-    
-    if (role === 'buyer') {
-        window.location.href = 'customer.html';
-    } else {
-        window.location.href = 'seller.html';
+    try {
+        const response = await DataService.request('/auth/register', 'POST', userData);
+        
+        if (response && response.token) {
+            alert('Registration Successful! Redirecting...');
+            const loggedInUser = {
+                id: response._id,
+                name: response.name,
+                email: response.email,
+                role: response.role
+            };
+            Auth.login(loggedInUser, response.token);
+        } else {
+            alert('Registration failed. Please try again.');
+        }
+    } catch (error) {
+        alert(error.message || 'Registration failed. Please try again.');
     }
 });
+
 
 function showError(inputId, message) {
     const input = document.getElementById(inputId);

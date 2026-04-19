@@ -1,52 +1,66 @@
 const Auth = {
+    currentUser: null,
+
     getUser: function() {
+        return this.currentUser;
+    },
+
+    isAuthenticated: function() {
+        return !!localStorage.getItem('bitezy_token');
+    },
+
+    getRole: function() {
+        return this.currentUser ? this.currentUser.role : null;
+    },
+
+    getName: function() {
+        return this.currentUser ? this.currentUser.name : 'Guest';
+    },
+
+    getResidence: function() {
+        return this.currentUser ? this.currentUser.residence : null;
+    },
+
+    /**
+     * Fetch user profile from database using token
+     * This replaces localStorage for user data persistence
+     */
+    init: async function() {
+        const token = localStorage.getItem('bitezy_token');
+        if (!token) {
+            this.currentUser = null;
+            return null;
+        }
+
         try {
-            const user = localStorage.getItem('bitezy_user');
-            return user ? JSON.parse(user) : null;
+            // Use DataService to fetch profile
+            if (typeof DataService !== 'undefined') {
+                this.currentUser = await DataService.request('/auth/me');
+                return this.currentUser;
+            }
         } catch (e) {
-            console.error('Error reading user data:', e);
+            console.error('Failed to initialize Auth session:', e);
+            this.logout(); // Token might be expired or invalid
             return null;
         }
     },
 
-    isAuthenticated: function() {
-        const user = this.getUser();
-        return user && user.loggedIn === true;
-    },
-
-    getRole: function() {
-        const user = this.getUser();
-        return user ? user.role : null;
-    },
-
-    getName: function() {
-        const user = this.getUser();
-        return user ? user.name : 'Guest';
-    },
-
-    getHall: function() {
-        const user = this.getUser();
-        return user ? user.hall : null;
-    },
-
-    requireAuth: function(redirectTo) {
+    requireAuth: async function(redirectTo) {
         if (!this.isAuthenticated()) {
-            window.location.href = 'login.html?redirect=' + encodeURIComponent(redirectTo || 'customer.html');
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(redirectTo || window.location.pathname);
             return false;
+        }
+        
+        if (!this.currentUser) {
+            const user = await this.init();
+            if (!user) return false;
         }
         return true;
     },
 
-    /**
-     * Require specific role
-     * @param {string|string[]} roles - Required role(s)
-     * @param {string} redirectTo - Page to redirect if unauthorized
-     */
-    requireRole: function(roles, redirectTo) {
-        if (!this.isAuthenticated()) {
-            window.location.href = 'login.html?redirect=' + encodeURIComponent(redirectTo || 'customer.html');
-            return false;
-        }
+    requireRole: async function(roles, redirectTo) {
+        const authed = await this.requireAuth(redirectTo);
+        if (!authed) return false;
 
         const userRole = this.getRole();
         const allowedRoles = Array.isArray(roles) ? roles : [roles];
@@ -59,76 +73,29 @@ const Auth = {
         return true;
     },
 
+    login: function(userData, token) {
+        // We only store the token now. Profile is fetched on init.
+        localStorage.setItem('bitezy_token', token);
+        this.currentUser = userData;
+        
+        // Redirect based on role
+        if (userData.role === 'admin') window.location.href = 'admin.html';
+        else if (userData.role === 'seller') window.location.href = 'seller.html';
+        else window.location.href = 'customer.html';
+    },
+
     logout: function() {
-        localStorage.removeItem('bitezy_user');
+        localStorage.removeItem('bitezy_token');
+        this.currentUser = null;
         window.location.href = 'index.html';
     },
 
-    updateUser: function(data) {
-        try {
-            const user = this.getUser();
-            if (user) {
-                const updatedUser = { ...user, ...data };
-                localStorage.setItem('bitezy_user', JSON.stringify(updatedUser));
-                return true;
-            }
-            return false;
-        } catch (e) {
-            console.error('Error updating user data:', e);
-            return false;
-        }
-    },
-
-    updateUserInDB: function(data) {
-        try {
-            const user = this.getUser();
-            if (!user || !user.id) {
-                return false;
-            }
-
-            const updatedUser = { ...user, ...data };
-            localStorage.setItem('bitezy_user', JSON.stringify(updatedUser));
-
-            let db = JSON.parse(localStorage.getItem('bitezy_users_db') || '[]');
-            const userIndex = db.findIndex(u => u.id === user.id);
-            
-            if (userIndex !== -1) {
-                db[userIndex] = { ...db[userIndex], ...data };
-            } else {
-                db.push({ ...user, ...data });
-            }
-            
-            localStorage.setItem('bitezy_users_db', JSON.stringify(db));
-            
-            window.dispatchEvent(new StorageEvent('storage', {
-                key: 'bitezy_user',
-                newValue: JSON.stringify(updatedUser)
-            }));
-            
+    updateUserLocal: function(data) {
+        if (this.currentUser) {
+            this.currentUser = { ...this.currentUser, ...data };
             return true;
-        } catch (e) {
-            return false;
         }
-    },
-
-    getUserFromDB: function(userId) {
-        try {
-            const db = JSON.parse(localStorage.getItem('bitezy_users_db') || '[]');
-            return db.find(u => u.id === userId) || null;
-        } catch (e) {
-            return null;
-        }
-    },
-
-    initMockDB: function(users) {
-        try {
-            const existing = localStorage.getItem('bitezy_users_db');
-            if (!existing) {
-                localStorage.setItem('bitezy_users_db', JSON.stringify(users));
-            }
-        } catch (e) {
-            console.error('Error initializing mock database:', e);
-        }
+        return false;
     }
 };
 

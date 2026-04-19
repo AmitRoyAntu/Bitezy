@@ -1,18 +1,4 @@
-// DATABASE SIMULATION
-const getDB = (key) => {
-    try {
-        return JSON.parse(localStorage.getItem(key)) || [];
-    } catch (e) {
-        return [];
-    }
-};
-const saveDB = (key, data) => {
-    try {
-        localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-        console.error('Error saving to localStorage:', e);
-    }
-};
+// SELLER DASHBOARD - API-CONNECTED VERSION
 
 function showToast(msg) {
     const t = document.getElementById('toast');
@@ -23,30 +9,24 @@ function showToast(msg) {
     }
 }
 
-// Initialize orders DB with sample data from JSON if it's empty
-async function initializeOrdersDB() {
-    if (!localStorage.getItem('foodhub_orders') || JSON.parse(localStorage.getItem('foodhub_orders')).length === 0) {
-        try {
-            const response = await fetch('../data/orders.json');
-            const data = await response.json();
-            localStorage.setItem('foodhub_orders', JSON.stringify(data.orders || []));
-        } catch (e) {
-            console.error('Error loading orders from JSON:', e);
-            localStorage.setItem('foodhub_orders', JSON.stringify([]));
-        }
-    }
-}
-
-// Call this on page load
-document.addEventListener('DOMContentLoaded', initializeOrdersDB);
-
 // APP STATE
 let orderViewMode = 'active';
+let sellerOrders = [];
+let sellerProvider = null;
 
 // ORDER LOGIC
 
+async function loadSellerOrders() {
+    try {
+        sellerOrders = await DataService.getSellerOrders();
+        renderOrders();
+    } catch (error) {
+        console.error('Error loading seller orders:', error);
+    }
+}
+
 function renderOrders(mode) {
-    if (mode) { // Allows calling without args to just refresh
+    if (mode) {
         orderViewMode = mode;
     }
     const tbody = document.getElementById('orders-table-body');
@@ -67,15 +47,7 @@ function renderOrders(mode) {
         activeButton.classList.remove('btn-primary');
     }
 
-    const allOrders = getDB('foodhub_orders');
-    // Get current seller from user data
-    const user = Auth.getUser();
-    const currentSeller = user ? (user.shopName || user.name + "'s Shop") : "Unknown Seller";
-    
-    const filteredOrders = allOrders.filter(order => {
-        // Filter for the current seller
-        if (order.provider !== currentSeller) return false;
-
+    const filteredOrders = sellerOrders.filter(order => {
         const isActive = !['DELIVERED', 'PICKED_UP', 'CANCELLED'].includes(order.status);
         return orderViewMode === 'active' ? isActive : !isActive;
     });
@@ -85,7 +57,7 @@ function renderOrders(mode) {
         return;
     }
 
-    filteredOrders.sort((a,b) => b.id - a.id).forEach(order => {
+    filteredOrders.forEach(order => {
         const tr = document.createElement('tr');
         
         let statusClass = '';
@@ -102,25 +74,27 @@ function renderOrders(mode) {
         }
 
         let actionBtns = '';
+        const orderId = order._id;
         if (order.status === 'PENDING') {
-            actionBtns = `<button class="btn btn-success" style="padding:6px 12px; font-size:12px;" onclick="updateStatus(${order.id}, 'PREPARING')">Accept</button> <button class="btn btn-danger" style="padding:6px 12px; font-size:12px;" onclick="updateStatus(${order.id}, 'CANCELLED')">Reject</button>`;
+            actionBtns = `<button class="btn btn-success" style="padding:6px 12px; font-size:12px;" onclick="updateStatus('${orderId}', 'PREPARING')">Accept</button> <button class="btn btn-danger" style="padding:6px 12px; font-size:12px;" onclick="updateStatus('${orderId}', 'CANCELLED')">Reject</button>`;
         } else if (order.status === 'PREPARING') {
-            if (order.type === 'Delivery') actionBtns = `<button class="btn btn-info" style="padding:6px 12px; font-size:12px;" onclick="updateStatus(${order.id}, 'ON_THE_WAY')">Send on Way</button>`;
-            else actionBtns = `<button class="btn btn-purple" style="padding:6px 12px; font-size:12px;" onclick="updateStatus(${order.id}, 'READY')">Mark Ready</button>`;
+            if (order.type === 'delivery') actionBtns = `<button class="btn btn-info" style="padding:6px 12px; font-size:12px;" onclick="updateStatus('${orderId}', 'ON_THE_WAY')">Send on Way</button>`;
+            else actionBtns = `<button class="btn btn-purple" style="padding:6px 12px; font-size:12px;" onclick="updateStatus('${orderId}', 'READY')">Mark Ready</button>`;
         } else if (order.status === 'ON_THE_WAY') {
-            actionBtns = `<button class="btn btn-success" style="padding:6px 12px; font-size:12px;" onclick="updateStatus(${order.id}, 'DELIVERED')">Mark Delivered</button>`;
+            actionBtns = `<button class="btn btn-success" style="padding:6px 12px; font-size:12px;" onclick="updateStatus('${orderId}', 'DELIVERED')">Mark Delivered</button>`;
         } else if (order.status === 'READY') {
-            actionBtns = `<button class="btn btn-success" style="padding:6px 12px; font-size:12px;" onclick="updateStatus(${order.id}, 'PICKED_UP')">Mark Picked Up</button>`;
+            actionBtns = `<button class="btn btn-success" style="padding:6px 12px; font-size:12px;" onclick="updateStatus('${orderId}', 'PICKED_UP')">Mark Picked Up</button>`;
         } else {
             actionBtns = '<span style="color:var(--gray); font-size:12px;">Completed</span>';
         }
 
-        const typeIcon = order.type === 'Delivery' ? '<i class="fa-solid fa-truck type-icon"></i>' : '<i class="fa-solid fa-shopping-bag type-icon"></i>';
+        const typeIcon = order.type === 'delivery' ? '<i class="fa-solid fa-truck type-icon"></i>' : '<i class="fa-solid fa-shopping-bag type-icon"></i>';
         const itemsSummary = order.items.map(i => `${i.qty}x ${i.name}`).join(', ');
+        const customerName = order.customer ? order.customer.name : 'Unknown';
 
         tr.innerHTML = `
-            <td><strong>#${order.id}</strong></td>
-            <td>${order.customer.name}</td>
+            <td><strong>#${orderId.slice(-6)}</strong></td>
+            <td>${customerName}</td>
             <td>${typeIcon} ${order.type}</td>
             <td style="color:#555;">${itemsSummary}</td>
             <td style="font-weight:600;">৳${order.total}</td>
@@ -131,13 +105,18 @@ function renderOrders(mode) {
     });
 }
 
-function updateStatus(id, newStatus) {
-    const allOrders = getDB('foodhub_orders');
-    const orderIndex = allOrders.findIndex(o => o.id === id);
-    if (orderIndex !== -1) {
-        allOrders[orderIndex].status = newStatus;
-        saveDB('foodhub_orders', allOrders);
-        renderOrders(); // Refresh the current view
+async function updateStatus(orderId, newStatus) {
+    try {
+        await DataService.updateOrderStatus(orderId, newStatus);
+        // Update local state
+        const orderIndex = sellerOrders.findIndex(o => o._id === orderId);
+        if (orderIndex !== -1) {
+            sellerOrders[orderIndex].status = newStatus;
+        }
+        renderOrders();
+        showToast(`Order status updated to ${newStatus}`);
+    } catch (error) {
+        showToast('Error updating order status');
     }
 }
 
@@ -145,11 +124,16 @@ function updateStatus(id, newStatus) {
 let menuItems = [];
 
 async function loadMenuItems() {
-    const user = Auth.getUser();
-    if (!user || !user.shopName) return;
-    
-    menuItems = await DataService.getMenuByProvider(user.shopName);
-    renderMenu();
+    try {
+        if (sellerProvider) {
+            menuItems = await DataService.getMenuByProvider(sellerProvider._id);
+        } else {
+            menuItems = await DataService.getMenu();
+        }
+        renderMenu();
+    } catch (error) {
+        console.error('Error loading menu:', error);
+    }
 }
 
 function renderMenu() {
@@ -169,10 +153,10 @@ function renderMenu() {
             <td><strong>${item.name}</strong></td>
             <td><span style="background:#f1f2f6; padding:4px 8px; border-radius:4px; font-size:12px;">${item.category}</span></td>
             <td style="font-weight:600; color:var(--dark);">৳${item.price}</td>
-            <td><label class="switch"><input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleAvailability(${item.id})"><span class="slider round"></span></label></td>
+            <td><label class="switch"><input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleAvailability('${item._id}')"><span class="slider round"></span></label></td>
             <td>
-                <button class="btn-icon" onclick="editItem(${item.id})"><i class="fa-solid fa-edit"></i></button> 
-                <button class="btn-icon" onclick="deleteItem(${item.id})" style="color:#FF7675"><i class="fa-solid fa-trash"></i></button>
+                <button class="btn-icon" onclick="editItem('${item._id}')"><i class="fa-solid fa-edit"></i></button> 
+                <button class="btn-icon" onclick="deleteItem('${item._id}')" style="color:#FF7675"><i class="fa-solid fa-trash"></i></button>
             </td>`;
         tbody.appendChild(tr);
     });
@@ -186,51 +170,86 @@ function openModal() {
     document.getElementById('itemId').value = ''; 
     modal.classList.add('open'); 
 }
-function closeModal() { modal.classList.remove('open'); }
-function saveItem(event) { 
+function closeModal() { 
+    modal.classList.remove('open'); 
+    if (form) form.reset();
+}
+async function saveItem(event) { 
     event.preventDefault(); 
-    // In a real app, this would update the JSON/DB
-    showToast("Feature coming soon: Saving to persistent storage.");
-    closeModal(); 
+    
+    const id = document.getElementById('itemId').value;
+    const itemData = {
+        name: document.getElementById('itemName').value,
+        category: document.getElementById('itemCategory').value,
+        price: parseFloat(document.getElementById('itemPrice').value),
+        img: document.getElementById('itemImageUrl').value,
+        desc: document.getElementById('itemDesc').value
+    };
+
+    try {
+        if (id) {
+            await DataService.updateMenuItem(id, itemData);
+            showToast("Item updated successfully!");
+        } else {
+            await DataService.createMenuItem(itemData);
+            showToast("Item added successfully!");
+        }
+        closeModal();
+        loadMenuItems(); // Reload the whole list
+    } catch (error) {
+        showToast(error.message || "Error saving item", "error");
+    }
 }
 function editItem(id) { 
-    showToast("Edit feature coming soon.");
+    const item = menuItems.find(i => i._id === id);
+    if (!item) return;
+
+    document.getElementById('modalTitle').innerText = "Edit Item";
+    document.getElementById('itemId').value = item._id;
+    document.getElementById('itemName').value = item.name;
+    document.getElementById('itemCategory').value = item.category;
+    document.getElementById('itemPrice').value = item.price;
+    document.getElementById('itemImageUrl').value = item.img || '';
+    document.getElementById('itemDesc').value = item.desc || '';
+    
+    modal.classList.add('open');
 }
-function deleteItem(id) { 
-    if(confirm("Delete?")) { 
-        menuItems = menuItems.filter(i=>i.id!==id); 
-        renderMenu(); 
-        showToast("Item removed from view (session only)");
+async function deleteItem(id) { 
+    if(confirm("Are you sure you want to delete this item?")) { 
+        try {
+            await DataService.deleteMenuItem(id);
+            showToast("Item removed successfully");
+            loadMenuItems(); // Refresh list
+        } catch (error) {
+            showToast("Error deleting item", "error");
+        }
     } 
 }
-function toggleAvailability(id) { 
-    const i = menuItems.find(i=>i.id===id); 
+async function toggleAvailability(id) { 
+    const i = menuItems.find(i => i._id === id); 
     if(i) {
-        i.available = !i.available;
-        showToast(`${i.name} is now ${i.available ? 'available' : 'unavailable'}`);
+        const originalStatus = i.available;
+        const newStatus = !originalStatus;
+        try {
+            await DataService.updateMenuItem(id, { available: newStatus });
+            i.available = newStatus;
+            showToast(`${i.name} is now ${i.available ? 'available' : 'unavailable'}`);
+        } catch (error) {
+            console.error('Error toggling availability:', error);
+            showToast('Error updating availability');
+            renderMenu(); // Rerender to revert the checkbox state
+        }
     }
 }
 
 
 // CHART FUNCTIONS
 function updateWeeklySalesChart(days = 7) {
-    const user = Auth.getUser();
-    if (!user || user.role !== 'seller') return;
-    
-    const shopName = user.shopName || document.getElementById('sShopName')?.value;
-    if (!shopName) return;
-    
-    const allOrders = getDB('foodhub_orders');
-    const sellerOrders = allOrders.filter(o => o.provider === shopName);
-    
-    // Calculate date range
+    // Use sellerOrders (already loaded from API)
     const now = new Date();
-    const startDate = new Date(now);
-    startDate.setDate(now.getDate() - Math.max(days, 7) + 1);
     
-    // Initialize sales data for each day
-    const salesData = {};
     const dayLabels = [];
+    const salesData = {};
     
     for (let i = Math.max(days, 7) - 1; i >= 0; i--) {
         const date = new Date(now);
@@ -242,28 +261,23 @@ function updateWeeklySalesChart(days = 7) {
         dayLabels.push({ date: dateKey, label: dayName, sales: 0 });
     }
     
-    // Group orders by date
     sellerOrders.forEach(order => {
-        const orderDate = new Date(order.createdAt);
-        // Filter only delivered/completed orders
         if (['DELIVERED', 'PICKED_UP'].includes(order.status)) {
-            const dateKey = orderDate.toISOString().split('T')[0];
+            const dateKey = new Date(order.createdAt).toISOString().split('T')[0];
             if (salesData.hasOwnProperty(dateKey)) {
                 salesData[dateKey] += order.total;
             }
         }
     });
     
-    // Update dayLabels with sales amounts
     dayLabels.forEach(day => {
         day.sales = salesData[day.date] || 0;
     });
     
-    // Find max sales for scaling
     const maxSales = Math.max(...dayLabels.map(d => d.sales), 1);
     
-    // Generate chart HTML
     const chartContainer = document.getElementById('weeklySalesChart');
+    if (!chartContainer) return;
     chartContainer.innerHTML = dayLabels.map(day => {
         const percentage = (day.sales / maxSales) * 100;
         const displaySales = day.sales > 0 ? `৳${day.sales}` : '৳0';
@@ -276,36 +290,41 @@ function updateWeeklySalesChart(days = 7) {
 
 // DASHBOARD DATA
 async function loadSellerDashboardData() {
-    const user = Auth.getUser();
-    if (!user || user.role !== 'seller') return;
-    
-    const shopName = user.shopName || document.getElementById('sShopName')?.value;
-    if (!shopName) return;
-    
-    const allOrders = getDB('foodhub_orders');
-    const sellerOrders = allOrders.filter(o => o.provider === shopName);
-    
-    const today = new Date().toDateString();
-    const todayOrders = sellerOrders.filter(o => new Date(o.id).toDateString() === today);
+    // Use already-loaded sellerOrders
+    const todayStr = new Date().toDateString();
+    const todayOrders = sellerOrders.filter(o => 
+        new Date(o.createdAt).toDateString() === todayStr && 
+        ['DELIVERED', 'PICKED_UP'].includes(o.status)
+    );
     
     const todayRevenue = todayOrders.reduce((sum, o) => sum + o.total, 0);
-    const totalRevenue = sellerOrders.reduce((sum, o) => sum + o.total, 0);
     const totalOrders = sellerOrders.length;
     const pendingOrders = sellerOrders.filter(o => 
         !['DELIVERED', 'PICKED_UP', 'CANCELLED'].includes(o.status)
     ).length;
     
-    const allReviews = await DataService.getReviews();
-    const sellerReviews = allReviews.filter(r => r.providerName === shopName);
-    const avgRating = sellerReviews.length > 0 
-        ? (sellerReviews.reduce((acc, r) => acc + r.rating, 0) / sellerReviews.length).toFixed(1)
-        : '0.0';
-    const totalReviews = sellerReviews.length;
+    // Get reviews for this provider
+    let avgRating = '0.0';
+    let totalReviews = 0;
+    if (sellerProvider) {
+        try {
+            const reviews = await DataService.getReviews(sellerProvider._id);
+            totalReviews = reviews.length;
+            avgRating = totalReviews > 0 
+                ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
+                : '0.0';
+        } catch (e) {
+            console.error('Error loading reviews:', e);
+        }
+    }
     
-    const deliveryOrders = sellerOrders.filter(o => o.type === 'Delivery').length;
-    const pickupOrders = sellerOrders.filter(o => o.type === 'Pickup').length;
-    const deliveryPercent = totalOrders > 0 ? Math.round((deliveryOrders / totalOrders) * 100) : 0;
-    const pickupPercent = totalOrders > 0 ? Math.round((pickupOrders / totalOrders) * 100) : 0;
+    const completedOrders = sellerOrders.filter(o => ['DELIVERED', 'PICKED_UP'].includes(o.status));
+    const deliveryOrders = completedOrders.filter(o => o.type === 'delivery').length;
+    const pickupOrders = completedOrders.filter(o => o.type === 'pickup').length;
+    const totalCompleted = completedOrders.length;
+    
+    const deliveryPercent = totalCompleted > 0 ? Math.round((deliveryOrders / totalCompleted) * 100) : 0;
+    const pickupPercent = totalCompleted > 0 ? Math.round((pickupOrders / totalCompleted) * 100) : 0;
     
     document.getElementById('dash-today-earnings').textContent = `৳ ${todayRevenue.toLocaleString()}`;
     document.getElementById('dash-total-orders').textContent = totalOrders;
@@ -334,19 +353,56 @@ async function loadSellerDashboardData() {
                 case 'PICKED_UP': statusClass = 'status-pickedup'; break;
                 case 'CANCELLED': statusClass = 'status-cancelled'; break;
             }
+            const customerName = order.customer ? order.customer.name : 'Unknown';
             return `
                 <tr>
-                    <td>#${order.id.toString().slice(-4)}</td>
-                    <td>${order.customer.name}</td>
-                    <td><i class="fa-solid fa-${order.type === 'Delivery' ? 'truck' : 'shopping-bag'} type-icon"></i> ${order.type}</td>
+                    <td>#${order._id.slice(-4)}</td>
+                    <td>${customerName}</td>
+                    <td><i class="fa-solid fa-${order.type === 'delivery' ? 'truck' : 'shopping-bag'} type-icon"></i> ${order.type}</td>
                     <td><span class="status-badge ${statusClass}">${order.status.replace(/_/g, ' ')}</span></td>
                 </tr>
             `;
         }).join('');
     }
     
-    // Update the weekly sales chart
     updateWeeklySalesChart(7);
+    renderTopSellingItems();
+}
+
+function renderTopSellingItems() {
+    const listContainer = document.getElementById('top-selling-list');
+    if (!listContainer) return;
+
+    // Aggregate sales from completed orders
+    const salesCount = {};
+    sellerOrders.forEach(order => {
+        if (['DELIVERED', 'PICKED_UP'].includes(order.status)) {
+            order.items.forEach(item => {
+                salesCount[item.name] = (salesCount[item.name] || 0) + item.qty;
+            });
+        }
+    });
+
+    // Convert to array and sort
+    const sortedItems = Object.entries(salesCount)
+        .map(([name, qty]) => ({ name, qty }))
+        .sort((a, b) => b.qty - a.qty)
+        .slice(0, 3); // Top 3
+
+    if (sortedItems.length === 0) {
+        listContainer.innerHTML = '<p style="color:var(--gray); text-align:center; padding:20px;">No sales data available yet.</p>';
+        return;
+    }
+
+    listContainer.innerHTML = sortedItems.map((item, index) => `
+        <div class="item-rank">
+            <div class="rank-number">${index + 1}</div>
+            <div style="flex:1">
+                <span style="font-size:14px; font-weight:600; color:var(--dark);">${item.name}</span><br>
+                <small style="color:var(--gray)">${item.qty} sold</small>
+            </div>
+        </div>
+    `).join('');
 }
 
 // NAVIGATION
@@ -372,58 +428,60 @@ function showSection(sectionId) {
 }
 
 async function renderSellerReviews() {
-    const user = Auth.getUser();
-    if (!user || user.role !== 'seller') return;
+    if (!sellerProvider) return;
     
-    const shopName = user.shopName || document.getElementById('sShopName')?.value;
-    if (!shopName) return;
-    
-    const allReviews = await DataService.getReviews();
-    const sellerReviews = allReviews.filter(r => r.providerName === shopName);
-    
-    const avgRating = sellerReviews.length > 0 
-        ? (sellerReviews.reduce((acc, r) => acc + r.rating, 0) / sellerReviews.length).toFixed(1)
-        : '0.0';
-    
-    document.getElementById('seller-avg-rating').textContent = avgRating;
-    document.getElementById('seller-total-reviews').textContent = sellerReviews.length;
-    
-    const container = document.getElementById('seller-reviews-list');
-    
-    if (sellerReviews.length === 0) {
-        container.innerHTML = `
-            <div style="text-align:center; padding:60px 20px; color:var(--gray);">
-                <i class="fa-solid fa-comment-slash" style="font-size:48px; margin-bottom:15px; display:block;"></i>
-                <p>No reviews yet. Reviews will appear here once customers submit them.</p>
-            </div>
-        `;
-        return;
-    }
-    
-    container.innerHTML = sellerReviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).map(review => {
-        const stars = Array(5).fill(0).map((_, i) => 
-            i < review.rating ? '<i class="fa-solid fa-star" style="color:var(--warning);"></i>' : '<i class="fa-regular fa-star" style="color:var(--border);"></i>'
-        ).join('');
+    try {
+        const sellerReviews = await DataService.getReviewsByProvider(sellerProvider._id);
+
         
-        const date = new Date(review.timestamp).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
-        });
+        const avgRating = sellerReviews.length > 0 
+            ? (sellerReviews.reduce((acc, r) => acc + r.rating, 0) / sellerReviews.length).toFixed(1)
+            : '0.0';
         
-        return `
-            <div class="review-item" style="padding:20px; border-bottom:1px solid var(--border);">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                    <div>
-                        <span style="font-weight:700; color:var(--dark);">${review.buyerName}</span>
-                        <span style="color:var(--gray); font-size:13px; margin-left:10px;">${date}</span>
-                    </div>
-                    <div style="color:var(--warning);">${stars}</div>
+        document.getElementById('seller-avg-rating').textContent = avgRating;
+        document.getElementById('seller-total-reviews').textContent = sellerReviews.length;
+        
+        const container = document.getElementById('seller-reviews-list');
+        
+        if (sellerReviews.length === 0) {
+            container.innerHTML = `
+                <div style="text-align:center; padding:60px 20px; color:var(--gray);">
+                    <i class="fa-solid fa-comment-slash" style="font-size:48px; margin-bottom:15px; display:block;"></i>
+                    <p>No reviews yet. Reviews will appear here once customers submit them.</p>
                 </div>
-                <p style="color:#555; font-size:14px; line-height:1.6; margin:0;">${review.comment}</p>
-            </div>
-        `;
-    }).join('');
+            `;
+            return;
+        }
+        
+        container.innerHTML = sellerReviews.map(review => {
+            const stars = Array(5).fill(0).map((_, i) => 
+                i < review.rating ? '<i class="fa-solid fa-star" style="color:var(--warning);"></i>' : '<i class="fa-regular fa-star" style="color:var(--border);"></i>'
+            ).join('');
+            
+            const date = new Date(review.createdAt).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const buyerName = review.buyer ? review.buyer.name : 'Anonymous';
+            
+            return `
+                <div class="review-item" style="padding:20px; border-bottom:1px solid var(--border);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                        <div>
+                            <span style="font-weight:700; color:var(--dark);">${buyerName}</span>
+                            <span style="color:var(--gray); font-size:13px; margin-left:10px;">${date}</span>
+                        </div>
+                        <div style="color:var(--warning);">${stars}</div>
+                    </div>
+                    <p style="color:#555; font-size:14px; line-height:1.6; margin:0;">${review.comment}</p>
+                </div>
+            `;
+        }).join('');
+    } catch (error) {
+        console.error('Error loading reviews:', error);
+    }
 }
 
 function enableEdit() {
@@ -446,7 +504,7 @@ function cancelEdit() {
     document.getElementById('btnCancel').classList.add('hidden');
 }
 
-function saveProfile(e) {
+async function saveProfile(e) {
     e.preventDefault();
     
     const updatedData = {
@@ -459,41 +517,67 @@ function saveProfile(e) {
         closeTime: document.getElementById('sCloseTime').value
     };
     
-    if (Auth.updateUserInDB(updatedData)) {
+    try {
+        await DataService.updateProfile(updatedData);
+        Auth.updateUser(updatedData);
         document.getElementById('sellerNameDisplay').textContent = updatedData.shopName;
         cancelEdit();
-        showToast("Profile Saved");
-    } else {
-        showToast("Error saving profile", "error");
+        showToast("Profile Saved Successfully!");
+    } catch (error) {
+        showToast(error.message || "Error saving profile", "error");
     }
 }
 
 // INITIALIZATION
-document.addEventListener('DOMContentLoaded', () => {
-    if (!Auth.isAuthenticated()) {
-        window.location.href = 'login.html?redirect=seller.html';
+document.addEventListener('DOMContentLoaded', async () => {
+    // Show loading screen initially
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) loadingScreen.style.display = 'flex';
+
+    // Initialize Auth (fetches profile from DB)
+    const user = await Auth.init();
+    
+    if (!user || user.role !== 'seller') {
+        if (!Auth.isAuthenticated()) {
+            window.location.href = 'login.html?redirect=seller.html';
+        } else {
+            alert('Access denied. Seller accounts only.');
+            window.location.href = 'index.html';
+        }
         return;
     }
     
-    const user = Auth.getUser();
-    if (user && user.role === 'seller') {
-        document.getElementById('sellerNameDisplay').textContent = user.shopName || user.name + "'s Shop";
-        
-        const welcomeTitle = document.querySelector('#home .welcome-box h1');
-        if (welcomeTitle) {
-            welcomeTitle.textContent = 'Hello, ' + (user.name.split(' ')[0] || 'Seller') + '!';
-        }
-        
-        const fields = ['sName', 'sEmail', 'sPhone', 'sShopName', 'sLocation', 'sDescription', 'sOpenTime', 'sCloseTime'];
-        const userFields = ['name', 'email', 'phone', 'shopName', 'location', 'description', 'openTime', 'closeTime'];
-        
-        fields.forEach((fieldId, index) => {
-            const el = document.getElementById(fieldId);
-            if (el && user[userFields[index]]) {
-                el.value = user[userFields[index]];
-            }
-        });
+    document.getElementById('sellerNameDisplay').textContent = user.shopName || user.name + "'s Shop";
+    
+    const welcomeTitle = document.querySelector('#home .welcome-box h1');
+    if (welcomeTitle) {
+        welcomeTitle.textContent = 'Hello, ' + (user.name.split(' ')[0] || 'Seller') + '!';
     }
+    
+    const fields = ['sName', 'sEmail', 'sPhone', 'sShopName', 'sLocation', 'sDescription', 'sOpenTime', 'sCloseTime'];
+    const userFields = ['name', 'email', 'phone', 'shopName', 'location', 'description', 'openTime', 'closeTime'];
+    
+    fields.forEach((fieldId, index) => {
+        const el = document.getElementById(fieldId);
+        if (el && user[userFields[index]]) {
+            el.value = user[userFields[index]];
+        }
+    });
+
+    
+    // Load seller's provider info
+    try {
+        sellerProvider = await DataService.getMyProvider();
+    } catch (e) {
+        console.warn('Could not load provider info:', e);
+    }
+
+    // Load orders
+    await loadSellerOrders();
+    
+    // Update Dashboard UI (Numbers and Charts)
+    loadSellerDashboardData();
+    updateWeeklySalesChart();
     
     document.getElementById('loading-screen').style.display = 'none';
     
@@ -515,8 +599,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadMenuItems();
     showSection('home');
-    // loadSellerDashboardData();
 });
+
 
 
 document.querySelector('.nav-logo').addEventListener('click', ()=>{
