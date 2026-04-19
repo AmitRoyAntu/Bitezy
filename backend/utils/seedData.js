@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 
 // Models
-const User = require('../models/User');
+const { User, Buyer, Seller, Admin } = require('../models/User');
 const Provider = require('../models/Provider');
 const MenuItem = require('../models/MenuItem');
 const Review = require('../models/Review');
@@ -42,17 +42,22 @@ const seedData = async () => {
         const userMap = {}; // Map old integer ID to new MongoDB ObjectId
         const bcrypt = require('bcryptjs');
         
-        const preparedUsers = await Promise.all(usersData.map(async (u) => {
+        const createdUsers = await Promise.all(usersData.map(async (u) => {
             const { id, password, ...rest } = u;
             const salt = await bcrypt.genSalt(10);
             const hashedPassword = await bcrypt.hash(password || 'password123', salt);
-            return {
-                ...rest,
-                password: hashedPassword
-            };
+            const userData = { ...rest, password: hashedPassword };
+
+            if (userData.role === 'seller') {
+                return await Seller.create(userData);
+            } else if (userData.role === 'buyer') {
+                return await Buyer.create(userData);
+            } else if (userData.role === 'admin') {
+                return await Admin.create(userData);
+            } else {
+                return await User.create(userData); // Fallback
+            }
         }));
-        
-        const createdUsers = await User.create(preparedUsers);
         
         usersData.forEach((u, index) => {
             userMap[u.id] = createdUsers[index]._id;

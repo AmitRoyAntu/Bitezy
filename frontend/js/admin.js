@@ -1,28 +1,5 @@
 // ADMIN DASHBOARD - API-CONNECTED VERSION
 
-function showToast(message, type = 'success') {
-    const toast = document.createElement('div');
-    toast.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
-        color: white;
-        padding: 15px 25px;
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        z-index: 9999;
-        font-weight: 600;
-        animation: slideIn 0.3s ease;
-    `;
-    toast.innerHTML = `<i class="fa-solid fa-${type === 'success' ? 'check' : 'times'}-circle"></i> ${message}`;
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-}
-
 // RENDER FUNCTIONS
 
 async function renderDashboard() {
@@ -155,27 +132,34 @@ async function renderUsers() {
 async function renderSellers() {
     try {
         const users = await DataService.getUsers();
+        const providers = await DataService.getProviders();
         const orders = await DataService.getAllOrders();
         const tbody = document.getElementById('sellers-table-body');
         tbody.innerHTML = '';
 
-        const sellers = users.filter(u => u.role === 'seller');
+        const sellerUsers = users.filter(u => u.role === 'seller');
 
-        if (sellers.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #888;">No sellers configured.</td></tr>';
+        if (sellerUsers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 40px; color: #888;">No sellers found.</td></tr>';
             return;
         }
 
-        sellers.forEach(seller => {
-            const sellerOrders = orders.filter(o => o.provider && o.provider.name === seller.shopName);
+        sellerUsers.forEach(seller => {
+            // Find this seller's provider profile
+            const provider = providers.find(p => p.seller === seller._id || (p.seller && p.seller._id === seller._id));
+            const shopName = provider ? provider.name : 'No Provider Profile';
+            const location = provider ? provider.location : 'N/A';
+            
+            // Filter orders for this provider
+            const sellerOrders = provider ? orders.filter(o => o.provider && o.provider._id === provider._id) : [];
             const totalRevenue = sellerOrders.reduce((sum, o) => sum + o.total, 0);
             const totalOrders = sellerOrders.length;
 
             tbody.innerHTML += `
                  <tr>
-                    <td><strong>${seller.shopName || 'N/A'}</strong></td>
+                    <td><strong>${shopName}</strong></td>
                     <td>${seller.name}</td>
-                    <td><span style="background:#f1f2f6; padding:4px 8px; border-radius:4px; font-size:12px;">${seller.location || 'N/A'}</span></td>
+                    <td><span style="background:#f1f2f6; padding:4px 8px; border-radius:4px; font-size:12px;">${location}</span></td>
                     <td>${totalOrders}</td>
                     <td style="font-weight:600;">৳${totalRevenue.toLocaleString()}</td>
                     <td>

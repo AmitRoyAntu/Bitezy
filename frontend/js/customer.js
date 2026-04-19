@@ -217,7 +217,7 @@ function setCategory(c, btn) {
 
 async function openMenu(name) {
     if (cart.length > 0 && cart[0].provider !== name) {
-        if (confirm(`You have items from ${cart[0].provider} in your cart. Clear cart and switch to ${name}?`)) {
+        if (window.confirm(`You have items from ${cart[0].provider} in your cart. Clear cart and switch to ${name}?`)) {
             cart = [];
             saveCart();
         } else {
@@ -278,7 +278,8 @@ function loadProviderDetails(provider) {
     }
 }
 
-function confirm(message) {
+// Helper for dialogs
+function showConfirm(message) {
     return window.confirm(message);
 }
 
@@ -378,12 +379,7 @@ function showSection(id) {
     }
 }
 
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.querySelector('span').innerText = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-}
+
 
 function enableEdit() {
     ['pName', 'pPhone', 'pBuyerType', 'pCuetId', 'pDepartment', 'pHall'].forEach(id => {

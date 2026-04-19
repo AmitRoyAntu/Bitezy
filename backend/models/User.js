@@ -4,24 +4,30 @@ const userSchema = new mongoose.Schema({
   name: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true },
   phone: { type: String, required: true },
-  password: { type: String, required: true }, // will be bcrypt hashed
+  password: { type: String, required: true },
   role: { type: String, enum: ['buyer', 'seller', 'admin'], default: 'buyer' },
-  isBlocked: { type: Boolean, default: false }, // Admin can block users
+  isBlocked: { type: Boolean, default: false },
+}, { 
+  discriminatorKey: 'role',
+  timestamps: true 
+});
 
-  // Buyer-specific fields
+const User = mongoose.model("User", userSchema);
+
+// Buyer Discriminator
+const Buyer = User.discriminator('buyer', new mongoose.Schema({
   buyerType: { type: String, enum: ['Student', 'Teacher', 'Staff'] },
   cuetId: { type: String },
   department: { type: String },
   residence: { type: String },
+}));
 
-  // Seller-specific fields
-  shopName: { type: String },
-  location: { type: String },
-  description: { type: String },
-  openTime: { type: String },
-  closeTime: { type: String },
-}, { timestamps: true });
+// Seller Discriminator (Holds link to Provider, but business info is in Provider)
+const Seller = User.discriminator('seller', new mongoose.Schema({
+  // We can add seller-account specific fields here later if needed
+}));
 
-const User = mongoose.model("User", userSchema);
+// Admin Discriminator
+const Admin = User.discriminator('admin', new mongoose.Schema({}));
 
-module.exports = User;
+module.exports = { User, Buyer, Seller, Admin };

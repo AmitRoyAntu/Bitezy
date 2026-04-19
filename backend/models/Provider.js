@@ -10,6 +10,8 @@ const providerSchema = new mongoose.Schema({
   deliveryTime: { type: String },
   isOpen: { type: Boolean, default: true },
   description: { type: String },
+  openTime: { type: String },
+  closeTime: { type: String },
 }, { timestamps: true });
 
 const Provider = mongoose.model("Provider", providerSchema);

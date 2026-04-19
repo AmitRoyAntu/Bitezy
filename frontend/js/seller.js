@@ -1,14 +1,5 @@
 // SELLER DASHBOARD - API-CONNECTED VERSION
 
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    if (t) {
-        t.querySelector('span').innerText = msg;
-        t.classList.add('show');
-        setTimeout(() => t.classList.remove('show'), 3000);
-    }
-}
-
 // APP STATE
 let orderViewMode = 'active';
 let sellerOrders = [];
@@ -298,6 +289,8 @@ async function loadSellerDashboardData() {
     );
     
     const todayRevenue = todayOrders.reduce((sum, o) => sum + o.total, 0);
+    const totalRevenue = sellerOrders.filter(o => ['DELIVERED', 'PICKED_UP'].includes(o.status)).reduce((sum, o) => sum + o.total, 0);
+    
     const totalOrders = sellerOrders.length;
     const pendingOrders = sellerOrders.filter(o => 
         !['DELIVERED', 'PICKED_UP', 'CANCELLED'].includes(o.status)
@@ -327,6 +320,7 @@ async function loadSellerDashboardData() {
     const pickupPercent = totalCompleted > 0 ? Math.round((pickupOrders / totalCompleted) * 100) : 0;
     
     document.getElementById('dash-today-earnings').textContent = `৳ ${todayRevenue.toLocaleString()}`;
+    document.getElementById('dash-total-earnings').textContent = `Total: ৳ ${totalRevenue.toLocaleString()}`;
     document.getElementById('dash-total-orders').textContent = totalOrders;
     document.getElementById('dash-pending-orders').textContent = `Pending: ${pendingOrders}`;
     document.getElementById('dash-avg-rating').textContent = avgRating;
@@ -485,7 +479,7 @@ async function renderSellerReviews() {
 }
 
 function enableEdit() {
-    ['sName', 'sPhone', 'sShopName', 'sLocation', 'sDescription', 'sOpenTime', 'sCloseTime'].forEach(id => {
+    ['sName', 'sPhone', 'sShopName', 'sLocation', 'sDescription', 'sOpenTime', 'sCloseTime', 'sType', 'sDeliveryTime', 'sImg'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = false;
     });
@@ -495,7 +489,7 @@ function enableEdit() {
 }
 
 function cancelEdit() {
-    ['sName', 'sPhone', 'sShopName', 'sLocation', 'sDescription', 'sOpenTime', 'sCloseTime'].forEach(id => {
+    ['sName', 'sPhone', 'sShopName', 'sLocation', 'sDescription', 'sOpenTime', 'sCloseTime', 'sType', 'sDeliveryTime', 'sImg'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.disabled = true;
     });
@@ -514,12 +508,15 @@ async function saveProfile(e) {
         location: document.getElementById('sLocation').value,
         description: document.getElementById('sDescription').value,
         openTime: document.getElementById('sOpenTime').value,
-        closeTime: document.getElementById('sCloseTime').value
+        closeTime: document.getElementById('sCloseTime').value,
+        type: document.getElementById('sType').value,
+        deliveryTime: document.getElementById('sDeliveryTime').value,
+        img: document.getElementById('sImg').value
     };
     
     try {
         await DataService.updateProfile(updatedData);
-        Auth.updateUser(updatedData);
+        Auth.updateUserLocal(updatedData);
         document.getElementById('sellerNameDisplay').textContent = updatedData.shopName;
         cancelEdit();
         showToast("Profile Saved Successfully!");
@@ -547,15 +544,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
     
-    document.getElementById('sellerNameDisplay').textContent = user.shopName || user.name + "'s Shop";
-    
-    const welcomeTitle = document.querySelector('#home .welcome-box h1');
-    if (welcomeTitle) {
-        welcomeTitle.textContent = 'Hello, ' + (user.name.split(' ')[0] || 'Seller') + '!';
-    }
-    
-    const fields = ['sName', 'sEmail', 'sPhone', 'sShopName', 'sLocation', 'sDescription', 'sOpenTime', 'sCloseTime'];
-    const userFields = ['name', 'email', 'phone', 'shopName', 'location', 'description', 'openTime', 'closeTime'];
+    const fields = ['sName', 'sEmail', 'sPhone'];
+    const userFields = ['name', 'email', 'phone'];
     
     fields.forEach((fieldId, index) => {
         const el = document.getElementById(fieldId);
@@ -564,10 +554,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    
+    const welcomeTitle = document.querySelector('#home .welcome-box h1');
+    if (welcomeTitle) {
+        welcomeTitle.textContent = 'Hello, ' + (user.name.split(' ')[0] || 'Seller') + '!';
+    }
+
     // Load seller's provider info
     try {
         sellerProvider = await DataService.getMyProvider();
+        if (sellerProvider) {
+            document.getElementById('sellerNameDisplay').textContent = sellerProvider.name;
+            
+            // Populate business fields from provider
+            document.getElementById('sShopName').value = sellerProvider.name || '';
+            document.getElementById('sLocation').value = sellerProvider.location || '';
+            document.getElementById('sDescription').value = sellerProvider.description || '';
+            document.getElementById('sOpenTime').value = sellerProvider.openTime || '07:00';
+            document.getElementById('sCloseTime').value = sellerProvider.closeTime || '23:00';
+            document.getElementById('sType').value = sellerProvider.type || 'Canteen';
+            document.getElementById('sDeliveryTime').value = sellerProvider.deliveryTime || '';
+            document.getElementById('sImg').value = sellerProvider.img || '';
+        }
     } catch (e) {
         console.warn('Could not load provider info:', e);
     }

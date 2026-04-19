@@ -41,13 +41,13 @@
                 <div class="form-group">
                     <label class="form-label">Email or Student ID</label>
                     <input type="text" id="loginEmail" class="form-input" placeholder="e.g. demo@cuet.ac.bd" required>
-                    <div class="error-message" id="emailError">Please enter a valid email or student ID</div>
+                    <div class="field-error" id="emailError"><i class="fa-solid fa-circle-exclamation"></i> <span>Please enter a valid email or student ID</span></div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Password</label>
                     <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
-                    <div class="error-message" id="passwordError">Password is required</div>
+                    <div class="field-error" id="passwordError"><i class="fa-solid fa-circle-exclamation"></i> <span>Password is required</span></div>
                 </div>
 
                 <button type="submit" class="submit-btn">Sign In</button>
@@ -59,8 +59,11 @@
         </div>
     </div>
 
+    <div id="toast" class="toast"><i class="fa-solid fa-check-circle"></i> <span></span></div>
+
     <script src="js/auth.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/shared.js"></script>
     <script src="js/login.js"></script>
 </body>
 </html>

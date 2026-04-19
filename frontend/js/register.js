@@ -22,7 +22,7 @@ roleOptions.forEach(option => {
 document.getElementById('registerForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
     document.querySelectorAll('.form-input, .form-select').forEach(el => el.classList.remove('error'));
     
     const role = document.querySelector('.role-option.active').dataset.role;
@@ -64,6 +64,9 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         residence: role === 'buyer' ? document.getElementById('regHall').value : null,
         shopName: role === 'seller' ? document.getElementById('regShopName').value.trim() : null,
         location: role === 'seller' ? document.getElementById('regLocation').value.trim() : null,
+        type: role === 'seller' ? document.getElementById('regType').value : null,
+        deliveryTime: role === 'seller' ? document.getElementById('regDeliveryTime').value.trim() : null,
+        img: role === 'seller' ? document.getElementById('regImage').value.trim() : null,
         description: role === 'seller' ? document.getElementById('regDescription').value.trim() : null,
         openTime: role === 'seller' ? document.getElementById('regOpenTime').value : null,
         closeTime: role === 'seller' ? document.getElementById('regCloseTime').value : null
@@ -73,19 +76,21 @@ document.getElementById('registerForm').addEventListener('submit', async functio
         const response = await DataService.request('/auth/register', 'POST', userData);
         
         if (response && response.token) {
-            alert('Registration Successful! Redirecting...');
+            showToast('Registration Successful! Redirecting...', 'success');
             const loggedInUser = {
                 id: response._id,
                 name: response.name,
                 email: response.email,
                 role: response.role
             };
-            Auth.login(loggedInUser, response.token);
+            setTimeout(() => {
+                Auth.login(loggedInUser, response.token);
+            }, 1000);
         } else {
-            alert('Registration failed. Please try again.');
+            showError('regConfirmPassword', 'Registration failed. Please try again.');
         }
     } catch (error) {
-        alert(error.message || 'Registration failed. Please try again.');
+        showError('regConfirmPassword', error.message || 'Registration failed.');
     }
 });
 
@@ -93,12 +98,13 @@ document.getElementById('registerForm').addEventListener('submit', async functio
 function showError(inputId, message) {
     const input = document.getElementById(inputId);
     input.classList.add('error');
-    let errorEl = input.parentElement.querySelector('.error-message');
+    let errorEl = input.parentElement.querySelector('.field-error');
     if (!errorEl) {
         errorEl = document.createElement('div');
-        errorEl.className = 'error-message show';
+        errorEl.className = 'field-error';
+        errorEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i> <span></span>';
         input.parentElement.appendChild(errorEl);
     }
-    errorEl.textContent = message;
+    errorEl.querySelector('span').textContent = message;
     errorEl.classList.add('show');
 }

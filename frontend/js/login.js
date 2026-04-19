@@ -11,7 +11,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
     
-    document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
     
     if (!email.trim() || !password.trim()) {
         if (!email.trim()) document.getElementById('emailError').classList.add('show');
@@ -32,9 +32,13 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
             };
             Auth.login(userData, response.token);
         } else {
-            alert('Login failed. Please check your credentials.');
+            const passErr = document.getElementById('passwordError');
+            passErr.querySelector('span').innerText = 'Invalid email or password';
+            passErr.classList.add('show');
         }
     } catch (error) {
-        alert(error.message || 'Login failed. Please try again.');
+        const passErr = document.getElementById('passwordError');
+        passErr.querySelector('span').innerText = error.message || 'Login failed';
+        passErr.classList.add('show');
     }
 });

@@ -54,7 +54,7 @@
                         <div class="mini-stat">
                             <label>Earnings (Today)</label>
                             <span class="value" id="dash-today-earnings">৳ 0</span>
-                            <span class="trend" style="color:var(--gray);">Today's revenue</span>
+                            <span class="trend" style="color:var(--gray);" id="dash-total-earnings">Total: ৳ 0</span>
                         </div>
                         <div class="mini-stat">
                             <label>Total Orders</label>
@@ -189,18 +189,36 @@
             <div class="card" style="max-width: 800px;">
                 <form id="profileForm" onsubmit="saveProfile(event)">
                     <div class="form-row">
-                        <div class="form-group"><label>Owner Name</label><input type="text" id="sName" class="form-control" value="Abdul Karim" disabled></div>
-                        <div class="form-group"><label>Owner Email</label><input type="email" id="sEmail" class="form-control" value="owner@qk-hall.cuet.bd" disabled></div>
+                        <div class="form-group"><label>Owner Name</label><input type="text" id="sName" class="form-control" value="" disabled></div>
+                        <div class="form-group"><label>Owner Email</label><input type="email" id="sEmail" class="form-control" value="" disabled></div>
                     </div>
                     <div class="form-row">
-                        <div class="form-group"><label>Phone Number</label><input type="tel" id="sPhone" class="form-control" value="01XXXXXXXXX" disabled></div>
-                        <div class="form-group"><label>Canteen Name</label><input type="text" id="sShopName" class="form-control" value="Dr. Qudrat-E-Khuda Dining" disabled></div>
+                        <div class="form-group"><label>Phone Number</label><input type="tel" id="sPhone" class="form-control" value="" disabled></div>
+                        <div class="form-group"><label>Shop/Canteen Name</label><input type="text" id="sShopName" class="form-control" value="" disabled></div>
                     </div>
-                    <div class="form-group"><label>Location</label><input type="text" id="sLocation" class="form-control" value="CUET Main Campus" disabled></div>
-                    <div class="form-group"><label>Description / Notice</label><textarea id="sDescription" class="form-control" rows="3" disabled>Serving fresh breakfast, lunch and dinner for QK Hall residents.</textarea></div>
+                    <div class="form-group"><label>Location</label><input type="text" id="sLocation" class="form-control" value="" disabled></div>
+                    <div class="form-group"><label>Description / Notice</label><textarea id="sDescription" class="form-control" rows="2" disabled></textarea></div>
                     <div class="form-row">
                         <div class="form-group"><label>Opening Time</label><input type="time" id="sOpenTime" class="form-control" value="07:00" disabled></div>
                         <div class="form-group"><label>Closing Time</label><input type="time" id="sCloseTime" class="form-control" value="23:00" disabled></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Shop Type</label>
+                            <select id="sType" class="form-control" disabled>
+                                <option value="Canteen">Canteen</option>
+                                <option value="Cafeteria">Cafeteria</option>
+                                <option value="Cart">Cart</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Delivery Time (e.g. 15-20 min)</label>
+                            <input type="text" id="sDeliveryTime" class="form-control" placeholder="20-30 min" disabled>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Shop Image URL</label>
+                        <input type="url" id="sImg" class="form-control" placeholder="https://example.com/image.jpg" disabled>
                     </div>
                     <div style="text-align:right; margin-top:20px;">
                         <button type="button" id="btnEdit" class="btn btn-primary" style="background:#2D3436;" onclick="enableEdit()">Edit Details</button>
@@ -300,6 +318,7 @@
 
     <script src="js/auth.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/shared.js"></script>
     <script src="js/seller.js"></script>
 </body>
 </html>
