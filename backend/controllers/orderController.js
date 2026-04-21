@@ -1,9 +1,7 @@
 const Order = require('../models/Order');
 const Provider = require('../models/Provider');
 
-// @desc    Create new order
-// @route   POST /api/orders
-// @access  Private
+// POST /api/orders (Private)
 const createOrder = async (req, res) => {
     try {
         const { provider, items, subtotal, deliveryFee, total, type, deliveryAddress } = req.body;
@@ -14,12 +12,12 @@ const createOrder = async (req, res) => {
 
         const order = new Order({
             customer: req.user._id,
-            provider, 
-            items, 
-            subtotal, 
-            deliveryFee, 
-            total, 
-            type, 
+            provider,
+            items,
+            subtotal,
+            deliveryFee,
+            total,
+            type,
             deliveryAddress
         });
 
@@ -30,9 +28,7 @@ const createOrder = async (req, res) => {
     }
 };
 
-// @desc    Get order by ID
-// @route   GET /api/orders/:id
-// @access  Private
+// GET /api/orders/:id (Private)
 const getOrderById = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id)
@@ -48,9 +44,7 @@ const getOrderById = async (req, res) => {
     }
 };
 
-// @desc    Update order status
-// @route   PUT /api/orders/:id/status
-// @access  Private/Seller/Admin
+// PUT /api/orders/:id/status (Private/Seller/Admin)
 const updateOrderStatus = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
@@ -75,9 +69,7 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
-// @desc    Get user orders
-// @route   GET /api/orders/myorders
-// @access  Private
+// GET /api/orders/myorders (Private)
 const getMyOrders = async (req, res) => {
     try {
         const orders = await Order.find({ customer: req.user._id }).populate('provider', 'name');
@@ -87,14 +79,12 @@ const getMyOrders = async (req, res) => {
     }
 };
 
-// @desc    Get seller orders
-// @route   GET /api/orders/seller
-// @access  Private/Seller
+// GET /api/orders/seller (Private/Seller/Admin)
 const getSellerOrders = async (req, res) => {
     try {
         // Find provider for the current seller
         const provider = await Provider.findOne({ seller: req.user._id });
-        
+
         if (!provider) {
             return res.json([]);
         }
@@ -108,9 +98,7 @@ const getSellerOrders = async (req, res) => {
     }
 };
 
-// @desc    Get all orders (Admin only)
-// @route   GET /api/orders
-// @access  Private/Admin
+// GET /api/orders (Private/Admin)
 const getAllOrders = async (req, res) => {
     try {
         const orders = await Order.find({})

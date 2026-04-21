@@ -16,12 +16,8 @@ if (typeof DataService !== 'undefined') {
     loadData();
 }
 
-let providerItems = []; // Current menu items for the opened provider
-
-
-
-// APP STATE
-let cart = (function() {
+let providerItems = [];
+let cart = (function () {
     try {
         return JSON.parse(localStorage.getItem('bitezy_cart')) || [];
     } catch (e) {
@@ -34,7 +30,6 @@ function saveCart() {
 }
 
 let currentProvider = "";
-
 let activeCat = "All";
 let currentReviews = [];
 let currentRating = 0;
@@ -45,11 +40,11 @@ function renderProviders() {
     const q = document.getElementById('searchInput').value.toLowerCase();
     const grid = document.getElementById('hallList');
     grid.innerHTML = '';
-    const list = providers.filter(p => 
-        (activeCat === 'All' || p.type === activeCat) && 
+    const list = providers.filter(p =>
+        (activeCat === 'All' || p.type === activeCat) &&
         p.name.toLowerCase().includes(q)
     );
-    
+
     if (list.length === 0) {
         grid.innerHTML = '<p style="color:#888; grid-column:1/-1; text-align:center;">No places found.</p>';
         return;
@@ -73,7 +68,7 @@ function renderProviders() {
 function renderMenuGrid() {
     const grid = document.getElementById('foodGrid');
     grid.innerHTML = '';
-    
+
     if (providerItems.length === 0) {
         grid.innerHTML = '<p style="color:#888; grid-column:1/-1; text-align:center;">No items available in this menu.</p>';
         return;
@@ -82,7 +77,7 @@ function renderMenuGrid() {
     providerItems.forEach(i => {
         const cartItem = cart.find(c => c.name === i.name);
         const qty = cartItem ? cartItem.qty : 0;
-        const actionHtml = qty > 0 
+        const actionHtml = qty > 0
             ? `<div class="counter">
                    <button class="c-btn" onclick="updateQty('${i.name}', ${i.price}, -1, '${i.img}')">-</button>
                    <span>${qty}</span>
@@ -91,7 +86,7 @@ function renderMenuGrid() {
             : `<button class="btn-add" onclick="updateQty('${i.name}', ${i.price}, 1, '${i.img}')">
                    <i class="fa-solid fa-plus"></i>
                </button>`;
-        
+
         grid.innerHTML += `
             <div class="food-card">
                 <img src="${i.img}" class="f-img">
@@ -115,7 +110,7 @@ function renderCart() {
     const feeEl = document.getElementById('cartFee');
     const totalEl = document.getElementById('cartTotalDisplay');
     const providerNameEl = document.getElementById('cartProviderName');
-    
+
     let subtotal = 0;
     let totalItems = 0;
 
@@ -149,10 +144,10 @@ function renderCart() {
                 </div>`;
         });
     }
-    
+
     const deliveryType = document.querySelector('input[name="orderType"]:checked').value;
     const deliveryFee = (cart.length > 0 && deliveryType === 'Delivery') ? 30 : 0;
-    
+
     badgeEl.innerText = totalItems;
     subtotalEl.innerText = `৳ ${subtotal}`;
     feeEl.innerText = `৳ ${deliveryFee}`;
@@ -162,10 +157,9 @@ function renderCart() {
 async function renderHistory() {
     const tbody = document.getElementById('historyTableBody');
     tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Loading history...</td></tr>';
-    
+
     try {
         const userOrders = await DataService.getOrders();
-        
         tbody.innerHTML = '';
         if (userOrders.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 60px 20px;">' +
@@ -190,7 +184,7 @@ async function renderHistory() {
                 case 'CANCELLED': statusClass = 'bs-cancelled'; break;
                 default: statusClass = 'bs-prep';
             }
-            
+
             tbody.innerHTML += `
                 <tr style="border-bottom:1px solid var(--border);">
                     <td style="padding:20px; font-weight:600;">#${order._id ? order._id.slice(-6) : 'N/A'}</td>
@@ -227,13 +221,13 @@ async function openMenu(name) {
     currentProvider = name;
 
     document.getElementById('menuTitle').textContent = name;
-    
+
     const provider = providers.find(p => p.name === name);
     if (provider) {
         // Fetch specific data for this provider
         loadReviews(provider._id);
         loadProviderDetails(provider);
-        
+
         try {
             providerItems = await DataService.getMenuByProvider(provider._id, true);
         } catch (error) {
@@ -241,11 +235,11 @@ async function openMenu(name) {
             providerItems = [];
         }
     }
-    
+
     renderMenuGrid();
     showSection('menu-view');
     renderCart();
-    
+
     document.getElementById('menu-tab').classList.remove('hidden');
     document.getElementById('reviews-tab').classList.add('hidden');
     document.querySelectorAll('.provider-tabs .tab-btn').forEach(b => b.classList.remove('active'));
@@ -257,7 +251,7 @@ function loadProviderDetails(provider) {
     document.getElementById('provider-location').textContent = provider.location || 'N/A';
     document.getElementById('provider-delivery-time').textContent = provider.deliveryTime || 'N/A';
     document.getElementById('provider-rating').textContent = provider.rating ? provider.rating + ' / 5' : 'N/A';
-    
+
     const statusEl = document.getElementById('provider-status');
     if (provider.isOpen) {
         statusEl.textContent = 'Open';
@@ -268,7 +262,7 @@ function loadProviderDetails(provider) {
         statusEl.className = 'status-badge status-closed';
         statusEl.style.cssText = 'background: #F8D7DA; color: #721C24; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;';
     }
-    
+
     const descEl = document.getElementById('provider-description');
     if (provider.description) {
         descEl.querySelector('p').textContent = provider.description;
@@ -295,8 +289,8 @@ function updateQty(name, price, delta, img) {
         cart.push({ name, price, qty: 1, provider: currentProvider, img });
         showToast("Added to Cart");
     }
-    
-    
+
+
     saveCart();
     renderMenuGrid();
     renderCart();
@@ -320,7 +314,7 @@ async function placeOrder() {
     const deliveryType = document.querySelector('input[name="orderType"]:checked').value;
     const deliveryFee = deliveryType === 'Delivery' ? 30 : 0;
     const subtotal = cart.reduce((acc, item) => acc + (item.price * item.qty), 0);
-    
+
     // Find provider ID
     const provider = providers.find(p => p.name === cart[0].provider);
 
@@ -340,7 +334,7 @@ async function placeOrder() {
         deliveryFee: deliveryFee,
         total: subtotal + deliveryFee,
         type: deliveryType.toLowerCase(),
-        deliveryAddress: deliveryType === 'Delivery' ? 'CUET Campus' : '' 
+        deliveryAddress: deliveryType === 'Delivery' ? 'CUET Campus' : ''
     };
 
     try {
@@ -363,9 +357,9 @@ function showSection(id) {
     ['browse', 'menu-view', 'cart', 'history', 'profile'].forEach(secId => {
         document.getElementById(secId).classList.add('hidden');
     });
-    
+
     document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
-    
+
     document.getElementById(id).classList.remove('hidden');
     const activeLink = document.getElementById('link-' + id);
     if (activeLink) activeLink.classList.add('active');
@@ -373,7 +367,7 @@ function showSection(id) {
     if (id === 'history') {
         renderHistory();
     }
-    
+
     if (id === 'cart') {
         renderCart();
     }
@@ -403,7 +397,7 @@ function cancelEdit() {
 
 async function saveProfile(e) {
     e.preventDefault();
-    
+
     const updatedData = {
         name: document.getElementById('pName').value,
         phone: document.getElementById('pPhone').value,
@@ -412,19 +406,19 @@ async function saveProfile(e) {
         department: document.getElementById('pDepartment').value,
         residence: document.getElementById('pHall').value
     };
-    
+
     try {
         const response = await DataService.updateProfile(updatedData);
         if (response && response.token) {
             // Update local user data
             const user = Auth.getUser();
-            const updatedUser = { 
-                ...user, 
-                ...updatedData, 
-                id: response._id 
+            const updatedUser = {
+                ...user,
+                ...updatedData,
+                id: response._id
             };
             Auth.login(updatedUser, response.token); // Re-login with new token/data
-            
+
             document.getElementById('navbarName').innerText = updatedUser.name;
             document.getElementById('navbarHall').innerText = updatedUser.residence || '';
             cancelEdit();
@@ -439,7 +433,7 @@ async function saveProfile(e) {
 // INITIALIZATION
 function debounce(func, wait) {
     let timeout;
-    return function(...args) {
+    return function (...args) {
         clearTimeout(timeout);
         timeout = setTimeout(() => func.apply(this, args), wait);
     };
@@ -448,19 +442,19 @@ function debounce(func, wait) {
 document.addEventListener('DOMContentLoaded', async () => {
     // Hide loading screen initially
     const loadingScreen = document.getElementById('loading-screen');
-    
+
     // Initialize Auth (fetches profile from DB)
     const user = await Auth.init();
-    
+
     if (!user || !Auth.isAuthenticated()) {
         window.location.href = 'login.html?redirect=customer.html';
         return;
     }
-    
+
     // Populate UI with fetched user data
     document.getElementById('navbarName').textContent = user.name || 'User';
     document.getElementById('navbarHall').textContent = user.residence || '';
-    
+
     if (document.getElementById('pName')) {
         document.getElementById('pName').value = user.name || '';
     }
@@ -485,13 +479,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (document.getElementById('pHall')) {
         document.getElementById('pHall').value = user.residence || '';
     }
-    
-    document.getElementById('pBuyerType').addEventListener('change', function() {
+
+    document.getElementById('pBuyerType').addEventListener('change', function () {
         const isStudent = this.value === 'Student';
         document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
         document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
     });
-    
+
     const heroTitle = document.querySelector('#browse .hero-banner h1');
     if (heroTitle) {
         heroTitle.textContent = 'Hungry, ' + (user.name.split(' ')[0] || 'there') + '?';
@@ -499,8 +493,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (loadingScreen) loadingScreen.style.display = 'none';
 
-    
-    document.getElementById('logoutLink').addEventListener('click', function(e) {
+
+    document.getElementById('logoutLink').addEventListener('click', function (e) {
         e.preventDefault();
         Auth.logout();
     });
@@ -525,16 +519,16 @@ function renderReviews() {
     const avgStarsEl = document.getElementById('avgRatingStars');
     const reviewCountEl = document.getElementById('totalReviewCount');
     const badgeEl = document.getElementById('reviewCountBadge');
-    
-    const avgRating = currentReviews.length > 0 
+
+    const avgRating = currentReviews.length > 0
         ? (currentReviews.reduce((acc, r) => acc + r.rating, 0) / currentReviews.length).toFixed(1)
         : 0;
-    
+
     if (avgRatingEl) avgRatingEl.textContent = avgRating;
     if (avgStarsEl) avgStarsEl.innerHTML = renderStarRating(avgRating);
     if (reviewCountEl) reviewCountEl.textContent = `${currentReviews.length} reviews`;
     if (badgeEl) badgeEl.textContent = currentReviews.length;
-    
+
     if (currentReviews.length === 0) {
         container.innerHTML = `
             <div class="empty-reviews">
@@ -544,7 +538,7 @@ function renderReviews() {
         `;
         return;
     }
-    
+
     container.innerHTML = currentReviews.map(review => `
         <div class="review-item">
             <div class="review-header">
@@ -561,7 +555,7 @@ function renderStarRating(rating) {
     const fullStars = Math.floor(rating);
     const hasHalf = rating % 1 >= 0.5;
     let html = '';
-    
+
     for (let i = 0; i < fullStars; i++) {
         html += '<i class="fa-solid fa-star"></i>';
     }
@@ -572,7 +566,7 @@ function renderStarRating(rating) {
     for (let i = 0; i < emptyStars; i++) {
         html += '<i class="fa-regular fa-star"></i>';
     }
-    
+
     return html;
 }
 
@@ -583,7 +577,7 @@ function formatTimeAgo(timestamp) {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    
+
     if (diffMins < 1) return 'Just now';
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
@@ -594,7 +588,7 @@ function formatTimeAgo(timestamp) {
 function switchProviderTab(tab, btn) {
     document.querySelectorAll('.provider-tabs .tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    
+
     document.getElementById('menu-tab').classList.toggle('hidden', tab !== 'menu');
     document.getElementById('reviews-tab').classList.toggle('hidden', tab !== 'reviews');
 }
@@ -627,28 +621,28 @@ function updateStarInput(rating) {
 
 async function submitReview(e) {
     e.preventDefault();
-    
+
     const rating = parseInt(document.getElementById('reviewRating').value);
     const comment = document.getElementById('reviewComment').value;
-    
+
     if (rating === 0) {
         showToast('Please select a rating');
         return;
     }
-    
+
     if (!comment.trim()) {
         showToast('Please write a review');
         return;
     }
-    
+
     const provider = providers.find(p => p.name === currentProvider);
-    
+
     const reviewData = {
         provider: provider ? provider._id : null,
         rating: rating,
         comment: comment
     };
-    
+
     try {
         const newReview = await DataService.createReview(reviewData);
         currentReviews.unshift(newReview);

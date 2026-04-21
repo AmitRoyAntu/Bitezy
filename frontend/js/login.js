@@ -23,7 +23,7 @@ document.getElementById('loginForm').addEventListener('submit', async function(e
         const response = await DataService.request('/auth/login', 'POST', { email, password });
         
         if (response && response.token) {
-            // response contains _id, name, email, role, token
+            // response _id, name, email, role, token
             const userData = {
                 id: response._id,
                 name: response.name,

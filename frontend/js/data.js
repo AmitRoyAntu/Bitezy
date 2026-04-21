@@ -46,10 +46,6 @@ const DataService = {
         }
         return await this.request(`/menu${query}`);
     },
-    
-    async getMenuByProvider(providerId) {
-        return await this.request(`/menu?vendor=${providerId}`);
-    },
 
     async getOrders() {
         return await this.request('/orders/myorders');
@@ -85,16 +81,13 @@ const DataService = {
     },
 
     async getReviewsByProvider(providerId) {
-
         return await this.request(`/reviews/provider/${providerId}`);
     },
-
 
     async createReview(reviewData) {
         return await this.request('/reviews', 'POST', reviewData);
     },
     
-    // Calculate average rating for a provider
     async getProviderRating(providerId) {
         const reviews = await this.getReviews(providerId);
         if (reviews.length === 0) return 0;
@@ -124,12 +117,9 @@ const DataService = {
         return await this.request(`/users/${userId}/block`, 'PUT', { isBlocked });
     },
 
-    // Alias for compatibility
     async getReviews(providerId) {
         return await this.getReviewsByProvider(providerId);
     }
 };
 
-
-// Export for use
 window.DataService = DataService;

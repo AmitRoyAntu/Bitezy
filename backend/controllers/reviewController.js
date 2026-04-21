@@ -1,8 +1,6 @@
 const Review = require('../models/Review');
 
-// @desc    Get reviews for a provider
-// @route   GET /api/reviews/provider/:providerId
-// @access  Public
+// GET /api/reviews/provider/:providerId (Public)
 const getProviderReviews = async (req, res) => {
     try {
         const reviews = await Review.find({ provider: req.params.providerId })
@@ -14,9 +12,7 @@ const getProviderReviews = async (req, res) => {
     }
 };
 
-// @desc    Create a review
-// @route   POST /api/reviews
-// @access  Private
+// POST /api/reviews (Private)
 const createReview = async (req, res) => {
     try {
         const { provider, rating, comment } = req.body;
@@ -36,9 +32,7 @@ const createReview = async (req, res) => {
     }
 };
 
-// @desc    Get all reviews (Admin only)
-// @route   GET /api/reviews
-// @access  Private/Admin
+// GET /api/reviews (Private/Admin)
 const getAllReviews = async (req, res) => {
     try {
         const reviews = await Review.find({})

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const menuItemSchema = new mongoose.Schema({
   provider: { type: mongoose.Schema.Types.ObjectId, ref: 'Provider', required: true },
   name: { type: String, required: true },
-  category: { type: String, required: true }, // e.g., Rice, Snacks, Fast Food
+  category: { type: String, required: true },
   price: { type: Number, required: true },
   desc: { type: String },
   img: { type: String },

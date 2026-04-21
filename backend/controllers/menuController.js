@@ -1,9 +1,7 @@
 const MenuItem = require('../models/MenuItem');
 const Provider = require('../models/Provider');
 
-// @desc    Get all menu items
-// @route   GET /api/menu
-// @access  Public
+// GET /api/menu (Public)
 const getMenuItems = async (req, res) => {
     try {
         const vendorId = req.query.vendor;
@@ -21,9 +19,7 @@ const getMenuItems = async (req, res) => {
     }
 };
 
-// @desc    Get single menu item
-// @route   GET /api/menu/:id
-// @access  Public
+// GET /api/menu/:id (Public)
 const getMenuItemById = async (req, res) => {
     try {
         const item = await MenuItem.findById(req.params.id);
@@ -36,9 +32,7 @@ const getMenuItemById = async (req, res) => {
     }
 };
 
-// @desc    Create menu item (Seller only)
-// @route   POST /api/menu
-// @access  Private/Seller
+// POST /api/menu (Private/Seller/Admin)
 const createMenuItem = async (req, res) => {
     try {
         const { name, category, price, desc, img, available } = req.body;
@@ -66,9 +60,7 @@ const createMenuItem = async (req, res) => {
     }
 };
 
-// @desc    Update menu item
-// @route   PUT /api/menu/:id
-// @access  Private/Seller
+// PUT /api/menu/:id (Private/Seller/Admin)
 const updateMenuItem = async (req, res) => {
     try {
         const item = await MenuItem.findById(req.params.id);
@@ -89,9 +81,7 @@ const updateMenuItem = async (req, res) => {
     }
 };
 
-// @desc    Delete menu item
-// @route   DELETE /api/menu/:id
-// @access  Private/Seller
+// DELETE /api/menu/:id (Private/Seller/Admin)
 const deleteMenuItem = async (req, res) => {
     try {
         const item = await MenuItem.findById(req.params.id);

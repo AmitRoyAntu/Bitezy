@@ -1,8 +1,6 @@
 const Provider = require('../models/Provider');
 
-// @desc    Get all providers
-// @route   GET /api/providers
-// @access  Public
+// GET /api/providers (Public)
 const getProviders = async (req, res) => {
     try {
         const providers = await Provider.find({});
@@ -12,9 +10,7 @@ const getProviders = async (req, res) => {
     }
 };
 
-// @desc    Get provider by ID
-// @route   GET /api/providers/:id
-// @access  Public
+// GET /api/providers/:id (Public)
 const getProviderById = async (req, res) => {
     try {
         const provider = await Provider.findById(req.params.id);
@@ -27,9 +23,7 @@ const getProviderById = async (req, res) => {
     }
 };
 
-// @desc    Get current seller's provider
-// @route   GET /api/providers/myprovider
-// @access  Private/Seller
+// GET /api/providers/myprovider (Private/Seller)
 const getMyProvider = async (req, res) => {
     try {
         const provider = await Provider.findOne({ seller: req.user._id });

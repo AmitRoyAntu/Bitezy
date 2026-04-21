@@ -1,11 +1,6 @@
-// SELLER DASHBOARD - API-CONNECTED VERSION
-
-// APP STATE
 let orderViewMode = 'active';
 let sellerOrders = [];
 let sellerProvider = null;
-
-// ORDER LOGIC
 
 async function loadSellerOrders() {
     try {
@@ -26,6 +21,7 @@ function renderOrders(mode) {
     // Update button styles
     const activeButton = document.querySelector('button[onclick="renderOrders(\'active\')"]');
     const historyButton = document.querySelector('button[onclick="renderOrders(\'history\')"]');
+    
     if (orderViewMode === 'active') {
         activeButton.classList.add('btn-primary');
         activeButton.classList.remove('btn-outline');
@@ -50,7 +46,6 @@ function renderOrders(mode) {
 
     filteredOrders.forEach(order => {
         const tr = document.createElement('tr');
-        
         let statusClass = '';
         let statusLabel = order.status.replace(/_/g, ' ');
 
@@ -99,7 +94,6 @@ function renderOrders(mode) {
 async function updateStatus(orderId, newStatus) {
     try {
         await DataService.updateOrderStatus(orderId, newStatus);
-        // Update local state
         const orderIndex = sellerOrders.findIndex(o => o._id === orderId);
         if (orderIndex !== -1) {
             sellerOrders[orderIndex].status = newStatus;
@@ -155,16 +149,19 @@ function renderMenu() {
 
 const modal = document.getElementById('itemModal');
 const form = document.getElementById('menuForm');
+
 function openModal() { 
     if (form) form.reset(); 
     document.getElementById('modalTitle').innerText = "Add New Item"; 
     document.getElementById('itemId').value = ''; 
     modal.classList.add('open'); 
 }
+
 function closeModal() { 
     modal.classList.remove('open'); 
     if (form) form.reset();
 }
+
 async function saveItem(event) { 
     event.preventDefault(); 
     
@@ -186,11 +183,12 @@ async function saveItem(event) {
             showToast("Item added successfully!");
         }
         closeModal();
-        loadMenuItems(); // Reload the whole list
+        loadMenuItems();
     } catch (error) {
         showToast(error.message || "Error saving item", "error");
     }
 }
+
 function editItem(id) { 
     const item = menuItems.find(i => i._id === id);
     if (!item) return;
@@ -205,17 +203,19 @@ function editItem(id) {
     
     modal.classList.add('open');
 }
+
 async function deleteItem(id) { 
     if(confirm("Are you sure you want to delete this item?")) { 
         try {
             await DataService.deleteMenuItem(id);
             showToast("Item removed successfully");
-            loadMenuItems(); // Refresh list
+            loadMenuItems();
         } catch (error) {
             showToast("Error deleting item", "error");
         }
     } 
 }
+
 async function toggleAvailability(id) { 
     const i = menuItems.find(i => i._id === id); 
     if(i) {
@@ -228,7 +228,7 @@ async function toggleAvailability(id) {
         } catch (error) {
             console.error('Error toggling availability:', error);
             showToast('Error updating availability');
-            renderMenu(); // Rerender to revert the checkbox state
+            renderMenu();
         }
     }
 }
@@ -236,9 +236,7 @@ async function toggleAvailability(id) {
 
 // CHART FUNCTIONS
 function updateWeeklySalesChart(days = 7) {
-    // Use sellerOrders (already loaded from API)
     const now = new Date();
-    
     const dayLabels = [];
     const salesData = {};
     
@@ -266,9 +264,9 @@ function updateWeeklySalesChart(days = 7) {
     });
     
     const maxSales = Math.max(...dayLabels.map(d => d.sales), 1);
-    
     const chartContainer = document.getElementById('weeklySalesChart');
     if (!chartContainer) return;
+
     chartContainer.innerHTML = dayLabels.map(day => {
         const percentage = (day.sales / maxSales) * 100;
         const displaySales = day.sales > 0 ? `৳${day.sales}` : '৳0';
@@ -281,7 +279,6 @@ function updateWeeklySalesChart(days = 7) {
 
 // DASHBOARD DATA
 async function loadSellerDashboardData() {
-    // Use already-loaded sellerOrders
     const todayStr = new Date().toDateString();
     const todayOrders = sellerOrders.filter(o => 
         new Date(o.createdAt).toDateString() === todayStr && 
@@ -290,13 +287,11 @@ async function loadSellerDashboardData() {
     
     const todayRevenue = todayOrders.reduce((sum, o) => sum + o.total, 0);
     const totalRevenue = sellerOrders.filter(o => ['DELIVERED', 'PICKED_UP'].includes(o.status)).reduce((sum, o) => sum + o.total, 0);
-    
     const totalOrders = sellerOrders.length;
     const pendingOrders = sellerOrders.filter(o => 
         !['DELIVERED', 'PICKED_UP', 'CANCELLED'].includes(o.status)
     ).length;
     
-    // Get reviews for this provider
     let avgRating = '0.0';
     let totalReviews = 0;
     if (sellerProvider) {
@@ -315,7 +310,6 @@ async function loadSellerDashboardData() {
     const deliveryOrders = completedOrders.filter(o => o.type === 'delivery').length;
     const pickupOrders = completedOrders.filter(o => o.type === 'pickup').length;
     const totalCompleted = completedOrders.length;
-    
     const deliveryPercent = totalCompleted > 0 ? Math.round((deliveryOrders / totalCompleted) * 100) : 0;
     const pickupPercent = totalCompleted > 0 ? Math.round((pickupOrders / totalCompleted) * 100) : 0;
     
@@ -367,7 +361,6 @@ function renderTopSellingItems() {
     const listContainer = document.getElementById('top-selling-list');
     if (!listContainer) return;
 
-    // Aggregate sales from completed orders
     const salesCount = {};
     sellerOrders.forEach(order => {
         if (['DELIVERED', 'PICKED_UP'].includes(order.status)) {
@@ -381,7 +374,7 @@ function renderTopSellingItems() {
     const sortedItems = Object.entries(salesCount)
         .map(([name, qty]) => ({ name, qty }))
         .sort((a, b) => b.qty - a.qty)
-        .slice(0, 3); // Top 3
+        .slice(0, 3);
 
     if (sortedItems.length === 0) {
         listContainer.innerHTML = '<p style="color:var(--gray); text-align:center; padding:20px;">No sales data available yet.</p>';
@@ -408,17 +401,9 @@ function showSection(sectionId) {
     const link = document.getElementById('link-' + sectionId);
     if (link) link.classList.add('active');
 
-    if (sectionId === 'home') {
-        loadSellerDashboardData();
-    }
-    
-    if (sectionId === 'orders') {
-        renderOrders('active');
-    }
-    
-    if (sectionId === 'reviews') {
-        renderSellerReviews();
-    }
+    if (sectionId === 'home') loadSellerDashboardData();
+    if (sectionId === 'orders') renderOrders('active');
+    if (sectionId === 'reviews') renderSellerReviews();
 }
 
 async function renderSellerReviews() {
@@ -426,8 +411,6 @@ async function renderSellerReviews() {
     
     try {
         const sellerReviews = await DataService.getReviewsByProvider(sellerProvider._id);
-
-        
         const avgRating = sellerReviews.length > 0 
             ? (sellerReviews.reduce((acc, r) => acc + r.rating, 0) / sellerReviews.length).toFixed(1)
             : '0.0';
@@ -527,7 +510,6 @@ async function saveProfile(e) {
 
 // INITIALIZATION
 document.addEventListener('DOMContentLoaded', async () => {
-    // Show loading screen initially
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) loadingScreen.style.display = 'flex';
 
@@ -564,8 +546,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         sellerProvider = await DataService.getMyProvider();
         if (sellerProvider) {
             document.getElementById('sellerNameDisplay').textContent = sellerProvider.name;
-            
-            // Populate business fields from provider
             document.getElementById('sShopName').value = sellerProvider.name || '';
             document.getElementById('sLocation').value = sellerProvider.location || '';
             document.getElementById('sDescription').value = sellerProvider.description || '';
@@ -581,8 +561,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Load orders
     await loadSellerOrders();
-    
-    // Update Dashboard UI (Numbers and Charts)
     loadSellerDashboardData();
     updateWeeklySalesChart();
     
@@ -608,8 +586,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     showSection('home');
 });
 
-
-
 document.querySelector('.nav-logo').addEventListener('click', ()=>{
     showSection('home');
 });
+

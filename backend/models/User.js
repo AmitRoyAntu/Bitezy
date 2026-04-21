@@ -22,10 +22,8 @@ const Buyer = User.discriminator('buyer', new mongoose.Schema({
   residence: { type: String },
 }));
 
-// Seller Discriminator (Holds link to Provider, but business info is in Provider)
-const Seller = User.discriminator('seller', new mongoose.Schema({
-  // We can add seller-account specific fields here later if needed
-}));
+// Seller Discriminator
+const Seller = User.discriminator('seller', new mongoose.Schema({}));
 
 // Admin Discriminator
 const Admin = User.discriminator('admin', new mongoose.Schema({}));

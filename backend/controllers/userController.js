@@ -1,8 +1,6 @@
 const { User } = require('../models/User');
 
-// @desc    Get all users
-// @route   GET /api/users
-// @access  Private/Admin
+// GET /api/users (Private/Admin)
 const getUsers = async (req, res) => {
     try {
         const users = await User.find({}).select('-password');
@@ -12,9 +10,7 @@ const getUsers = async (req, res) => {
     }
 };
 
-// @desc    Get user by ID
-// @route   GET /api/users/:id
-// @access  Private/Admin
+// GET /api/users/:id (Private/Admin)
 const getUserById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select('-password');
@@ -27,9 +23,7 @@ const getUserById = async (req, res) => {
     }
 };
 
-// @desc    Update user status (Block/Unblock)
-// @route   PUT /api/users/:id/block
-// @access  Private/Admin
+// PUT /api/users/:id/block (Private/Admin)
 const updateUserStatus = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);

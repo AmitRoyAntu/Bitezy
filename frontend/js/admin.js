@@ -1,7 +1,3 @@
-// ADMIN DASHBOARD - API-CONNECTED VERSION
-
-// RENDER FUNCTIONS
-
 async function renderDashboard() {
     try {
         const orders = await DataService.getAllOrders();

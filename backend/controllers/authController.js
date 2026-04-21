@@ -3,9 +3,7 @@ const bcrypt = require('bcryptjs');
 const { User, Buyer, Seller } = require('../models/User');
 const Provider = require('../models/Provider');
 
-// @desc    Register a new user
-// @route   POST /api/auth/register
-// @access  Public
+// POST /api/auth/register (Public)
 const registerUser = async (req, res) => {
     try {
         const { 
@@ -29,14 +27,12 @@ const registerUser = async (req, res) => {
 
         let user;
         if (role === 'seller') {
-            // Create Seller User
             user = await Seller.create({
                 name, email, phone,
                 password: hashedPassword,
                 role: 'seller'
             });
 
-            // Create Provider with business details
             const isOpen = calculateIsOpen(openTime, closeTime);
             await Provider.create({
                 name: shopName || `${name}'s Shop`,
@@ -52,7 +48,6 @@ const registerUser = async (req, res) => {
                 rating: 0
             });
         } else {
-            // Create Buyer User
             user = await Buyer.create({
                 name, email, phone,
                 password: hashedPassword,
@@ -75,7 +70,7 @@ const registerUser = async (req, res) => {
                     cuetId: user.cuetId,
                     department: user.department
                 } : {
-                    shopName: shopName, // From req.body since it's in Provider now
+                    shopName: shopName,
                 }),
                 token: generateToken(user._id),
             });
@@ -87,13 +82,10 @@ const registerUser = async (req, res) => {
     }
 };
 
-// @desc    Authenticate a user
-// @route   POST /api/auth/login
-// @access  Public
+// POST /api/auth/login (Public)
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-
         const user = await User.findOne({ email });
 
         if (user && (await bcrypt.compare(password, user.password))) {
@@ -132,9 +124,7 @@ const generateToken = (id) => {
     });
 };
 
-// @desc    Update user profile
-// @route   PUT /api/auth/profile
-// @access  Private
+// PUT /api/auth/profile (Private)
 const updateProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user._id);
@@ -179,7 +169,6 @@ const updateProfile = async (req, res) => {
                 isOpen: isOpen
             };
 
-            // Remove undefined fields to avoid overwriting existing data with empty values
             Object.keys(providerFields).forEach(key => providerFields[key] === undefined && delete providerFields[key]);
 
             await Provider.findOneAndUpdate(
@@ -189,26 +178,42 @@ const updateProfile = async (req, res) => {
             );
         }
 
-        return res.json({
+        const responseData = {
             _id: updatedUser._id,
             name: updatedUser.name,
             email: updatedUser.email,
             role: updatedUser.role,
             phone: updatedUser.phone,
-            ...(updatedUser.role === 'buyer' ? {
-                residence: updatedUser.residence,
-                buyerType: updatedUser.buyerType,
-            } : {}),
             token: generateToken(updatedUser._id),
-        });
+        };
+
+        if (updatedUser.role === 'buyer') {
+            responseData.residence = updatedUser.residence;
+            responseData.buyerType = updatedUser.buyerType;
+            responseData.cuetId = updatedUser.cuetId;
+            responseData.department = updatedUser.department;
+        } else if (updatedUser.role === 'seller') {
+            const provider = await Provider.findOne({ seller: updatedUser._id });
+            if (provider) {
+                responseData.shopName = provider.name;
+                responseData.location = provider.location;
+                responseData.description = provider.description;
+                responseData.openTime = provider.openTime;
+                responseData.closeTime = provider.closeTime;
+                responseData.type = provider.type;
+                responseData.deliveryTime = provider.deliveryTime;
+                responseData.img = provider.img;
+                responseData.isOpen = provider.isOpen;
+            }
+        }
+
+        return res.json(responseData);
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Get current user profile
-// @route   GET /api/auth/me
-// @access  Private
+// GET /api/auth/me (Private)
 const getMe = async (req, res) => {
     try {
         let user = await User.findById(req.user._id).select("-password").lean();
@@ -235,7 +240,6 @@ const getMe = async (req, res) => {
     }
 };
 
-// Helper: Calculate if provider is open based on GMT+6 (Bangladesh Time)
 const calculateIsOpen = (openTime, closeTime) => {
     if (!openTime || !closeTime) return false;
 
@@ -254,7 +258,6 @@ const calculateIsOpen = (openTime, closeTime) => {
     const closeMinutes = closeH * 60 + closeM;
 
     if (closeMinutes < openMinutes) {
-        // Handle overnight hours (e.g., 22:00 to 02:00)
         return currentTime >= openMinutes || currentTime < closeMinutes;
     }
     

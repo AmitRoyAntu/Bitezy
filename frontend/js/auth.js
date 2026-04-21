@@ -78,7 +78,6 @@ const Auth = {
         localStorage.setItem('bitezy_token', token);
         this.currentUser = userData;
         
-        // Redirect based on role
         if (userData.role === 'admin') window.location.href = 'admin.html';
         else if (userData.role === 'seller') window.location.href = 'seller.html';
         else window.location.href = 'customer.html';
