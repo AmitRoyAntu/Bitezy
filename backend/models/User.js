@@ -29,3 +29,4 @@ const Seller = User.discriminator('seller', new mongoose.Schema({}));
 const Admin = User.discriminator('admin', new mongoose.Schema({}));
 
 module.exports = { User, Buyer, Seller, Admin };
+

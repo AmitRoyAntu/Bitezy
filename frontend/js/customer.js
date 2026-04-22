@@ -210,6 +210,8 @@ function setCategory(c, btn) {
 }
 
 async function openMenu(name) {
+
+    // name = name.replace(/'/g, "\\'");
     if (cart.length > 0 && cart[0].provider !== name) {
         if (window.confirm(`You have items from ${cart[0].provider} in your cart. Clear cart and switch to ${name}?`)) {
             cart = [];
