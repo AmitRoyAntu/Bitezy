@@ -1,4 +1,17 @@
 const Review = require('../models/Review');
+const Provider = require('../models/Provider');
+
+const syncProviderRating = async (providerId) => {
+    const mongoose = require("mongoose");
+
+    const stats = await Review.aggregate([
+        { $match: { provider: new mongoose.Types.ObjectId(providerId),},},
+        { $group: { _id: null, avgRating: { $avg: "$rating" },},},
+    ]);
+
+    const rating = stats.length > 0 ? Number(stats[0].avgRating.toFixed(1)) : 0;
+    await Provider.findByIdAndUpdate(providerId, { rating });
+};
 
 // GET /api/reviews/provider/:providerId (Public)
 const getProviderReviews = async (req, res) => {
@@ -23,6 +36,8 @@ const createReview = async (req, res) => {
             rating,
             comment,
         });
+
+        await syncProviderRating(provider);
 
         // Populate buyer name before returning
         const populatedReview = await Review.findById(review._id).populate('buyer', 'name');

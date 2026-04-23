@@ -9,16 +9,7 @@ const Provider = require('../models/Provider');
 const MenuItem = require('../models/MenuItem');
 const Review = require('../models/Review');
 const Order = require('../models/Order');
-
-const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('MongoDB Connected for seeding...');
-    } catch (err) {
-        console.error(err.message);
-        process.exit(1);
-    }
-};
+const connectDB = require('../config/db')
 
 const loadJSON = (filename) => {
     const data = fs.readFileSync(path.join(__dirname, '../../data', `${filename}.json`), 'utf-8');
@@ -27,7 +18,15 @@ const loadJSON = (filename) => {
 
 const seedData = async () => {
     try {
-        await connectDB();
+        
+        connectDB(process.env.MONGODB_URI)
+            .then(() => {
+                console.log("Database connected successfully");
+            })
+            .catch((err) => {
+                console.error(`Database connection error: ${err.message}`);
+                process.exit(1);
+            });
 
         // Clear existing data
         await User.deleteMany();
@@ -126,6 +125,30 @@ const seedData = async () => {
             };
         }));
         console.log(`Seeded ${ordersData.length} orders.`);
+
+        // 6. Recalculate and persist provider ratings from seeded reviews
+        await Provider.updateMany({}, { rating: 0 });
+
+        const ratingStats = await Review.aggregate([
+            {
+                $group: {
+                    _id: '$provider',
+                    avgRating: { $avg: '$rating' }
+                }
+            }
+        ]);
+
+        if (ratingStats.length > 0) {
+            const ratingUpdates = ratingStats.map(stat => ({
+                updateOne: {
+                    filter: { _id: stat._id },
+                    update: { rating: Number(stat.avgRating.toFixed(1)) }
+                }
+            }));
+
+            await Provider.bulkWrite(ratingUpdates);
+        }
+        console.log('Updated provider ratings from reviews.');
 
         console.log('Seeding completed successfully!');
         process.exit();

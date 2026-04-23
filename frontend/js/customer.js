@@ -59,7 +59,7 @@ function renderProviders() {
                 </div>
                 <div class="p-info">
                     <div class="p-name">${p.name}</div>
-                    <div class="p-meta"><i class="fa-solid fa-star" style="color:#FF9F43"></i> 4.5 &bull; 20 min</div>
+                    <div class="p-meta"><i class="fa-solid fa-star" style="color:#FF9F43"></i> ${p.rating} &bull; ${p.deliveryTime}</div>
                 </div>
             </div>`;
     });
