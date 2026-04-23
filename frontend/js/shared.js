@@ -1,8 +1,4 @@
 /**
- * Centralized UI Helper Functions
- */
-
-/**
  * Show a toast notification
  * @param {string} msg - The message to display
  * @param {string} type - 'success', 'error', or 'warning'

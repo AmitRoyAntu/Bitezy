@@ -6,7 +6,7 @@ const { authorize } = require('../middleware/roleMiddleware');
 
 router.get('/', protect, authorize('admin'), getAllReviews);
 router.get('/provider/:providerId', getProviderReviews);
-router.post('/', protect, createReview);
+router.post('/', protect, authorize('buyer'), createReview);
 
 
 module.exports = router;

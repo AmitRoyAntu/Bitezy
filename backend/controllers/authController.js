@@ -257,10 +257,12 @@ const calculateIsOpen = (openTime, closeTime) => {
     const openMinutes = openH * 60 + openM;
     const closeMinutes = closeH * 60 + closeM;
 
+    // 22:00 → 05:00
     if (closeMinutes < openMinutes) {
         return currentTime >= openMinutes || currentTime < closeMinutes;
     }
     
+    // 09:00 → 22:00
     return currentTime >= openMinutes && currentTime < closeMinutes;
 };
 

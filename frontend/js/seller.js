@@ -140,8 +140,8 @@ function renderMenu() {
             <td style="font-weight:600; color:var(--dark);">৳${item.price}</td>
             <td><label class="switch"><input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleAvailability('${item._id}')"><span class="slider round"></span></label></td>
             <td>
-                <button class="btn-icon" onclick="editItem('${item._id}')"><i class="fa-solid fa-edit"></i></button> 
-                <button class="btn-icon" onclick="deleteItem('${item._id}')" style="color:#FF7675"><i class="fa-solid fa-trash"></i></button>
+                <button class="btn-icon" onclick="editItem('${item._id}')"><i class="fa-solid fa-edit" style="cursor: pointer; font-size: 20px"></i></button> 
+                <button class="btn-icon" onclick="deleteItem('${item._id}')" style="color:#FF7675"><i class="fa-solid fa-trash" style="cursor: pointer; font-size: 20px"></i></button>
             </td>`;
         tbody.appendChild(tr);
     });

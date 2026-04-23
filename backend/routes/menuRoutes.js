@@ -6,9 +6,9 @@ const { authorize } = require('../middleware/roleMiddleware');
 
 router.get('/', getMenuItems);
 router.get('/:id', getMenuItemById);
-router.post('/', protect, authorize('seller', 'admin'), createMenuItem);
-router.put('/:id', protect, authorize('seller', 'admin'), updateMenuItem);
-router.delete('/:id', protect, authorize('seller', 'admin'), deleteMenuItem);
+router.post('/', protect, authorize('seller'), createMenuItem);
+router.put('/:id', protect, authorize('seller'), updateMenuItem);
+router.delete('/:id', protect, authorize('seller'), deleteMenuItem);
 
 
 module.exports = router;

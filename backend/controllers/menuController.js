@@ -32,10 +32,10 @@ const getMenuItemById = async (req, res) => {
     }
 };
 
-// POST /api/menu (Private/Seller/Admin)
+// POST /api/menu (Private/Seller)
 const createMenuItem = async (req, res) => {
     try {
-        const { name, category, price, desc, img, available } = req.body;
+        const { name, category, price, desc, img } = req.body;
         
         // Find the provider associated with this seller
         const provider = await Provider.findOne({ seller: req.user._id });
@@ -50,7 +50,7 @@ const createMenuItem = async (req, res) => {
             price, 
             desc, 
             img, 
-            available: available !== undefined ? available : true, 
+            available: true, 
             provider: provider._id
         });
         
@@ -60,7 +60,7 @@ const createMenuItem = async (req, res) => {
     }
 };
 
-// PUT /api/menu/:id (Private/Seller/Admin)
+// PUT /api/menu/:id (Private/Seller)
 const updateMenuItem = async (req, res) => {
     try {
         const item = await MenuItem.findById(req.params.id);
@@ -81,7 +81,7 @@ const updateMenuItem = async (req, res) => {
     }
 };
 
-// DELETE /api/menu/:id (Private/Seller/Admin)
+// DELETE /api/menu/:id (Private/Seller)
 const deleteMenuItem = async (req, res) => {
     try {
         const item = await MenuItem.findById(req.params.id);

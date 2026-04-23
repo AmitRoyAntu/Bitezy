@@ -1,7 +1,7 @@
 const Order = require('../models/Order');
 const Provider = require('../models/Provider');
 
-// POST /api/orders (Private)
+// POST /api/orders (Private/buyer)
 const createOrder = async (req, res) => {
     try {
         const { provider, items, subtotal, deliveryFee, total, type, deliveryAddress } = req.body;
@@ -44,7 +44,7 @@ const getOrderById = async (req, res) => {
     }
 };
 
-// PUT /api/orders/:id/status (Private/Seller/Admin)
+// PUT /api/orders/:id/status (Private/Seller)
 const updateOrderStatus = async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
@@ -53,7 +53,6 @@ const updateOrderStatus = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
-        // Security: If seller, check if they own the provider for this order
         if (req.user.role === 'seller') {
             const provider = await Provider.findOne({ seller: req.user._id });
             if (!provider || order.provider.toString() !== provider._id.toString()) {
@@ -69,7 +68,7 @@ const updateOrderStatus = async (req, res) => {
     }
 };
 
-// GET /api/orders/myorders (Private)
+// GET /api/orders/myorders (Private/buyer)
 const getMyOrders = async (req, res) => {
     try {
         const orders = await Order.find({ customer: req.user._id }).populate('provider', 'name');
@@ -79,7 +78,7 @@ const getMyOrders = async (req, res) => {
     }
 };
 
-// GET /api/orders/seller (Private/Seller/Admin)
+// GET /api/orders/seller (Private/Seller)
 const getSellerOrders = async (req, res) => {
     try {
         // Find provider for the current seller

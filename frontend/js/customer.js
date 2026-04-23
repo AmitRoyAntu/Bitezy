@@ -52,7 +52,7 @@ function renderProviders() {
 
     list.forEach(p => {
         grid.innerHTML += `
-            <div class="provider-card" onclick="openMenu('${p.name}')">
+            <div class="provider-card" onclick="openMenu('${p.name.replace(/'/g, "\\'")}')">
                 <div class="p-img-box">
                     <img src="${p.img}" class="p-img">
                     <div class="p-tag">${p.type}</div>
@@ -211,7 +211,6 @@ function setCategory(c, btn) {
 
 async function openMenu(name) {
 
-    // name = name.replace(/'/g, "\\'");
     if (cart.length > 0 && cart[0].provider !== name) {
         if (window.confirm(`You have items from ${cart[0].provider} in your cart. Clear cart and switch to ${name}?`)) {
             cart = [];
