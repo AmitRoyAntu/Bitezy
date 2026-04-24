@@ -77,10 +77,12 @@ function renderOrders(mode) {
         const typeIcon = order.type === 'delivery' ? '<i class="fa-solid fa-truck type-icon"></i>' : '<i class="fa-solid fa-shopping-bag type-icon"></i>';
         const itemsSummary = order.items.map(i => `${i.qty}x ${i.name}`).join(', ');
         const customerName = order.customer ? order.customer.name : 'Unknown';
+        const customerResidence = order.customer && order.customer.residence ? order.customer.residence : '';
+        const customerHtml = `${customerName}${customerResidence ? `<br><small style="color:var(--gray)">${customerResidence}</small>` : ''}`;
 
         tr.innerHTML = `
             <td><strong>#${orderId.slice(-6)}</strong></td>
-            <td>${customerName}</td>
+            <td>${customerHtml}</td>
             <td>${typeIcon} ${order.type}</td>
             <td style="color:#555;">${itemsSummary}</td>
             <td style="font-weight:600;">৳${order.total}</td>
@@ -342,10 +344,13 @@ async function loadSellerDashboardData() {
                 case 'CANCELLED': statusClass = 'status-cancelled'; break;
             }
             const customerName = order.customer ? order.customer.name : 'Unknown';
+            const customerResidence = order.customer && order.customer.residence ? order.customer.residence : '';
+            const customerHtml = `${customerName}${customerResidence ? `<br><small style="color:var(--gray); font-size:11px;">${customerResidence}</small>` : ''}`;
+
             return `
                 <tr>
                     <td>#${order._id.slice(-4)}</td>
-                    <td>${customerName}</td>
+                    <td>${customerHtml}</td>
                     <td><i class="fa-solid fa-${order.type === 'delivery' ? 'truck' : 'shopping-bag'} type-icon"></i> ${order.type}</td>
                     <td><span class="status-badge ${statusClass}">${order.status.replace(/_/g, ' ')}</span></td>
                 </tr>

@@ -185,10 +185,15 @@ async function renderHistory() {
                 default: statusClass = 'bs-prep';
             }
 
+            const providerName = order.provider ? order.provider.name : 'Unknown';
+            const providerHtml = order.provider 
+                ? `<span style="color:var(--primary); cursor:pointer; font-weight:600;" onclick="openMenu('${order.provider.name.replace(/'/g, "\\'")}')">${order.provider.name}</span>`
+                : 'Unknown';
+
             tbody.innerHTML += `
                 <tr style="border-bottom:1px solid var(--border);">
                     <td style="padding:20px; font-weight:600;">#${order._id ? order._id.slice(-6) : 'N/A'}</td>
-                    <td style="padding:20px;">${order.provider ? order.provider.name : 'Unknown'}</td>
+                    <td style="padding:20px;">${providerHtml}</td>
                     <td style="padding:20px; color:var(--text-gray);">${order.items.map(i => `${i.qty}x ${i.name}`).join(', ')}</td>
                     <td style="padding:20px; font-weight:700;">৳ ${order.total}</td>
                     <td style="padding:20px;"><span class="badge-status ${statusClass}">${statusText}</span></td>
@@ -252,6 +257,7 @@ function loadProviderDetails(provider) {
     document.getElementById('provider-location').textContent = provider.location || 'N/A';
     document.getElementById('provider-delivery-time').textContent = provider.deliveryTime || 'N/A';
     document.getElementById('provider-rating').textContent = provider.rating ? provider.rating + ' / 5' : 'N/A';
+    document.getElementById('provider-phone').textContent = provider.seller?.phone || 'N/A';
 
     const statusEl = document.getElementById('provider-status');
     if (provider.isOpen) {
@@ -362,7 +368,8 @@ function showSection(id) {
     document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
 
     document.getElementById(id).classList.remove('hidden');
-    const activeLink = document.getElementById('link-' + id);
+    const linkId = id === 'menu-view' ? 'link-browse' : 'link-' + id;
+    const activeLink = document.getElementById(linkId);
     if (activeLink) activeLink.classList.add('active');
 
     if (id === 'history') {
@@ -503,6 +510,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.querySelectorAll('input[name="orderType"]').forEach(radio => {
         radio.addEventListener('change', renderCart);
     });
+
+    const badgeEl = document.getElementById('sidebarCartCount');
+    if (badgeEl) {
+        const totalItems = cart.reduce((acc, item) => acc + item.qty, 0);
+        badgeEl.innerText = totalItems;
+    }
 
     document.getElementById('searchInput').addEventListener('input', debounce(renderProviders, 300));
 

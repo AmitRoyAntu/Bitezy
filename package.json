@@ -4,10 +4,10 @@
   "description": "Bitezy Food Delivery Platform",
   "scripts": {
     "start": "node backend/server.js",
+    "backend": "npm run watch  --prefix backend",
     "frontend": "live-server frontend --port=3002",
-    "dev": "concurrently \"npm run frontend\" \"npm run start\"",
+    "dev": "concurrently \"npm run frontend\" \"npm run backend\"",
     "seed": "node backend/utils/seedData.js",
-
     "install:backend": "npm install --prefix backend",
     "postinstall": "npm run install:backend"
   },

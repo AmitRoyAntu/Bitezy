@@ -71,7 +71,9 @@ const updateOrderStatus = async (req, res) => {
 // GET /api/orders/myorders (Private/buyer)
 const getMyOrders = async (req, res) => {
     try {
-        const orders = await Order.find({ customer: req.user._id }).populate('provider', 'name');
+        const orders = await Order.find({ customer: req.user._id })
+            .populate('provider', 'name')
+            .sort('-createdAt');
         res.json(orders);
     } catch (error) {
         return res.status(500).json({ message: error.message });
@@ -82,7 +84,7 @@ const getMyOrders = async (req, res) => {
 const getSellerOrders = async (req, res) => {
     try {
         // Find provider for the current seller
-        const provider = await Provider.findOne({ seller: req.user._id });
+        const provider = await Provider.findOne({ seller: req.user._id }).sort('-createdAt');
 
         if (!provider) {
             return res.json([]);
