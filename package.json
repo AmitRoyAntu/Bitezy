@@ -1,11 +1,17 @@
 {
-  "name": "bitezy2",
+  "name": "bitezy",
   "version": "1.0.0",
-  "description": "Bitezy2 Food Delivery Platform",
+  "description": "Bitezy Food Delivery Platform",
   "scripts": {
-    "start": "cd backend && node server.js",
-    "dev": "cd backend && npx nodemon server.js",
-    "seed": "cd backend && node utils/seedData.js",
-    "install:backend": "cd backend && npm install"
+    "start": "node backend/server.js",
+    "frontend": "live-server frontend --port=3002",
+    "dev": "concurrently \"npm run frontend\" \"npm run start\"",
+    "seed": "node backend/utils/seedData.js",
+
+    "install:backend": "npm install --prefix backend",
+    "postinstall": "npm run install:backend"
+  },
+  "dependencies": {
+    "concurrently": "^9.2.1"
   }
 }
