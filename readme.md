@@ -11,8 +11,6 @@ npm install
 
 2. Create your environment file:
 - At `backend/.env`
-- Copy values from `backend/example.env`
-- Update values if needed
 
 3. Start frontend + backend together:
 ```
@@ -21,7 +19,7 @@ npm run dev
 
 4. Open the app:
 - Frontend: `http://localhost:3002`
-- Backend API: `http://localhost:8002`
+- Backend: `http://localhost:8002`
 
 ## What You Need
 - Node.js
