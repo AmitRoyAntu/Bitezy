@@ -18,7 +18,10 @@
     </div>
 
     <nav class="navbar">
-        <div class="nav-logo"><i class="fa-solid fa-burger"></i> Bitezy</div>
+        <div style="display:flex; align-items:center; gap: 15px;">
+            <i class="fa-solid fa-bars menu-toggle" id="menuToggle"></i>
+            <div class="nav-logo"><i class="fa-solid fa-burger"></i> Bitezy</div>
+        </div>
         <div class="nav-business">
             <i class="fa-solid fa-user-shield" style="color:var(--primary)"></i> 
             <span>Admin</span>
@@ -70,20 +73,22 @@
 
             <div class="card">
                 <h3>Recent Global Orders</h3>
-                 <table style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Order ID</th>
-                            <th>Customer</th>
-                            <th>Provider</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recent-orders-table-body">
-                        <!-- JS will populate this -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Provider</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-orders-table-body">
+                            <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -92,21 +97,23 @@
             <h1>All System Orders</h1>
             <p class="subtitle">Browse and manage all orders across the platform.</p>
             <div class="card">
-                <table style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Customer</th>
-                            <th>Provider</th>
-                            <th>Items</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="all-orders-table-body">
-                        <!-- JS will populate this -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Customer</th>
+                                <th>Provider</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-orders-table-body">
+                            <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -115,21 +122,23 @@
             <h1>User Management</h1>
             <p class="subtitle">Manage all registered student and staff accounts.</p>
             <div class="card">
-                <table style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Hall</th>
-                            <th>Email</th>
-                            <th>User Type</th>
-                            <th>Phone</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="users-table-body">
-                        <!-- JS will populate this -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Hall</th>
+                                <th>Email</th>
+                                <th>User Type</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
@@ -138,21 +147,23 @@
             <h1>Seller Management</h1>
             <p class="subtitle">Manage all canteens, cafeterias, and food carts.</p>
             <div class="card">
-                <table style="width:100%">
-                    <thead>
-                        <tr>
-                            <th>Shop Name</th>
-                            <th>Owner Name</th>
-                            <th>Location</th>
-                            <th>Total Orders</th>
-                            <th>Total Revenue</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="sellers-table-body">
-                         <!-- JS will populate this -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>Shop Name</th>
+                                <th>Owner Name</th>
+                                <th>Location</th>
+                                <th>Total Orders</th>
+                                <th>Total Revenue</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sellers-table-body">
+                             <!-- JS will populate this -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         

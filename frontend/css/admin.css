@@ -58,6 +58,8 @@
 @media (max-width: 1200px) { 
     .stats-row { grid-template-columns: repeat(2, 1fr); } 
 }
-@media (max-width: 600px) { 
+@media (max-width: 768px) { 
     .stats-row { grid-template-columns: 1fr; } 
+    .nav-business span { display: none; }
+    .nav-business { padding: 10px; border-radius: 50%; gap: 0; }
 }

@@ -499,8 +499,34 @@ document.addEventListener('DOMContentLoaded', async () => {
         heroTitle.textContent = 'Hungry, ' + (user.name.split(' ')[0] || 'there') + '?';
     }
 
-    if (loadingScreen) loadingScreen.style.display = 'none';
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.classList.toggle('open');
+        });
+    }
 
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar && window.innerWidth <= 900) {
+                sidebar.classList.remove('open');
+            }
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        const sidebar = document.querySelector('.sidebar');
+        const menuToggle = document.getElementById('menuToggle');
+        if (sidebar && sidebar.classList.contains('open') && window.innerWidth <= 900) {
+            if (!sidebar.contains(e.target) && (!menuToggle || !menuToggle.contains(e.target))) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+
+    if (loadingScreen) loadingScreen.style.display = 'none';
 
     document.getElementById('logoutLink').addEventListener('click', function (e) {
         e.preventDefault();

@@ -18,8 +18,11 @@
     </div>
 
     <nav class="navbar">
-        <div class="nav-logo" onclick="showSection('browse')">
-            <i class="fa-solid fa-burger"></i> Bitezy
+        <div style="display:flex; align-items:center; gap: 15px;">
+            <i class="fa-solid fa-bars menu-toggle" id="menuToggle"></i>
+            <div class="nav-logo" onclick="showSection('browse')">
+                <i class="fa-solid fa-burger"></i> Bitezy
+            </div>
         </div>
         <div class="nav-right">
             <div class="user-pill" onclick="showSection('profile')">
@@ -197,7 +200,7 @@
             <h1 style="margin-bottom:5px;">My Cart</h1>
             <p style="color:var(--text-gray); margin-bottom:30px;">Items from <span id="cartProviderName" style="color:var(--primary); font-weight:700;">...</span></p>
             
-            <div style="display:grid; grid-template-columns: 2fr 1fr; gap:30px;">
+            <div class="cart-grid">
                 <div class="list-card">
                     <div id="cartItemsList"></div>
                 </div>

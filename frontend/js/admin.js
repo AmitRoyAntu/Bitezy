@@ -225,36 +225,38 @@ function displayReviews() {
     }
     
     container.innerHTML = `
-        <table style="width:100%">
-            <thead>
-                <tr>
-                    <th>Reviewer</th>
-                    <th>Provider</th>
-                    <th>Rating</th>
-                    <th>Comment</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${filteredReviews.map(review => {
-                    const stars = Array(5).fill(0).map((_, i) => 
-                        i < review.rating ? '<i class="fa-solid fa-star" style="color:var(--warning);"></i>' : '<i class="fa-regular fa-star" style="color:var(--border);"></i>'
-                    ).join('');
-                    
-                    const date = new Date(review.createdAt).toLocaleDateString();
-                    
-                    return `
-                        <tr>
-                            <td><strong>${review.buyer ? review.buyer.name : 'Unknown'}</strong></td>
-                            <td>${review.provider ? review.provider.name : 'Unknown'}</td>
-                            <td style="color:var(--warning);">${stars}</td>
-                            <td style="color:#555; max-width:300px;">${review.comment}</td>
-                            <td>${date}</td>
-                        </tr>
-                    `;
-                }).join('')}
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Reviewer</th>
+                        <th>Provider</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${filteredReviews.map(review => {
+                        const stars = Array(5).fill(0).map((_, i) => 
+                            i < review.rating ? '<i class="fa-solid fa-star" style="color:var(--warning);"></i>' : '<i class="fa-regular fa-star" style="color:var(--border);"></i>'
+                        ).join('');
+                        
+                        const date = new Date(review.createdAt).toLocaleDateString();
+                        
+                        return `
+                            <tr>
+                                <td><strong>${review.buyer ? review.buyer.name : 'Unknown'}</strong></td>
+                                <td>${review.provider ? review.provider.name : 'Unknown'}</td>
+                                <td style="color:var(--warning);">${stars}</td>
+                                <td style="color:#555; max-width:300px;">${review.comment}</td>
+                                <td>${date}</td>
+                            </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>
+        </div>
     `;
 }
 
@@ -322,11 +324,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         Auth.logout();
     });
     
+    const menuToggle = document.getElementById('menuToggle');
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar) sidebar.classList.toggle('open');
+        });
+    }
+
     document.querySelectorAll('.sidebar-link[data-section]').forEach(link => {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             showSection(this.dataset.section);
+            const sidebar = document.querySelector('.sidebar');
+            if (sidebar && window.innerWidth <= 900) {
+                sidebar.classList.remove('open');
+            }
         });
+    });
+
+    document.addEventListener('click', (e) => {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar && sidebar.classList.contains('open') && window.innerWidth <= 900) {
+            if (!sidebar.contains(e.target) && (!menuToggle || !menuToggle.contains(e.target))) {
+                sidebar.classList.remove('open');
+            }
+        }
     });
 
     showSection('dashboard');

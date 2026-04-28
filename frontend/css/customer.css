@@ -236,6 +236,11 @@
 .c-btn { background: none; border: none; color: white; cursor: pointer; font-size: 14px; }
 
 /* Cart & History Specifics */
+.cart-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
 .list-card {
     background: white;
     border-radius: var(--radius);
@@ -324,21 +329,20 @@
 
 /* Responsive */
 @media (max-width: 900px) {
-    .navbar { padding: 0 20px; }
-    .sidebar { 
-        left: calc(var(--sidebar-w) * -1.1);
-        transition: left 0.3s ease-in-out;
-    }
-    .sidebar.open { left: 0; }
-    .main-content {
-        margin-left: 0;
-        width: 100%;
-        padding: 20px;
-    }
     .nav-logo { font-size: 20px; }
-    #cart .grid-container {
+    .cart-grid {
         grid-template-columns: 1fr;
     }
+}
+@media (max-width: 768px) {
+    .browse-header { flex-direction: column; align-items: flex-start; }
+    .search-box { width: 100%; }
+    .filter-tabs { overflow-x: auto; width: 100%; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+    .hero-banner { padding: 40px 20px; }
+    .hero-banner h1 { font-size: 24px; }
+    
+    .user-text { display: none; }
+    .user-pill { padding: 4px; border-radius: 50%; gap: 0; }
 }
 
 /* Provider Details Card */
