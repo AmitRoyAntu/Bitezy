@@ -72,3 +72,28 @@ function handleRegister(e) {
     alert("Registration Successful! Logging you in...");
     handleLogin(e); // Redirect after alert
 }
+
+// Check if already logged in and update UI
+document.addEventListener('DOMContentLoaded', async () => {
+    if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) {
+        const user = await Auth.init();
+        if (user) {
+            const navBtns = document.querySelector('.nav-btns');
+            if (navBtns) {
+                let dashboardUrl = 'customer.html';
+                if (user.role === 'admin') dashboardUrl = 'admin.html';
+                else if (user.role === 'seller') dashboardUrl = 'seller.html';
+                
+                navBtns.innerHTML = `
+                    <a href="${dashboardUrl}" class="btn btn-text">Dashboard</a>
+                    <a href="#" id="logoutBtn" class="btn btn-primary">Logout</a>
+                `;
+                
+                document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    Auth.logout();
+                });
+            }
+        }
+    }
+});

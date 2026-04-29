@@ -313,6 +313,19 @@ function removeItem(index) {
 
 
 async function placeOrder() {
+    if (!Auth.isAuthenticated()) {
+        if (confirm("You need to login to place an order. Redirect to login page?")) {
+            window.location.href = 'login.html?redirect=customer.html';
+        }
+        return;
+    }
+
+    const user = Auth.getUser();
+    if (user && user.role !== 'buyer') {
+        showToast("Only customer accounts can place orders.", 'error');
+        return;
+    }
+
     if (cart.length === 0) {
         showToast("Your cart is empty!", 'warning');
         return;
@@ -454,49 +467,80 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Auth (fetches profile from DB)
     const user = await Auth.init();
 
-    if (!user || !Auth.isAuthenticated()) {
-        window.location.href = 'login.html?redirect=customer.html';
+    // Allow guests, buyers, and staff
+    const isGuest = !Auth.isAuthenticated();
+    const isStaff = user && user.role === 'staff';
+    const isBuyer = user && user.role === 'buyer';
+
+    if (!isGuest && !isBuyer && !isStaff) {
+        alert('Access denied. This page is for customers and staff.');
+        window.location.href = 'index.html';
         return;
     }
 
-    // Populate UI with fetched user data
-    document.getElementById('navbarName').textContent = user.name || 'User';
-    document.getElementById('navbarHall').textContent = user.residence || '';
-
-    if (document.getElementById('pName')) {
-        document.getElementById('pName').value = user.name || '';
-    }
-    if (document.getElementById('pEmail')) {
-        document.getElementById('pEmail').value = user.email || '';
-    }
-    if (document.getElementById('pPhone')) {
-        document.getElementById('pPhone').value = user.phone || '';
-    }
-    if (document.getElementById('pBuyerType')) {
-        document.getElementById('pBuyerType').value = user.buyerType || 'Student';
-        const isStudent = user.buyerType === 'Student';
-        document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
-        document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
-    }
-    if (document.getElementById('pCuetId')) {
-        document.getElementById('pCuetId').value = user.cuetId || '';
-    }
-    if (document.getElementById('pDepartment')) {
-        document.getElementById('pDepartment').value = user.department || '';
-    }
-    if (document.getElementById('pHall')) {
-        document.getElementById('pHall').value = user.residence || '';
+    // Populate UI with fetched user data or guest defaults
+    if (user) {
+        document.getElementById('navbarName').textContent = user.name || 'User';
+        document.getElementById('navbarHall').textContent = user.residence || '';
+        
+        // Hide/Show sections based on role if needed
+        if (isStaff) {
+            document.getElementById('link-history').style.display = 'none';
+            document.getElementById('link-profile').style.display = 'none';
+        }
+    } else {
+        document.getElementById('navbarName').textContent = 'Guest User';
+        document.getElementById('navbarHall').textContent = 'Sign in to order';
+        document.getElementById('link-history').style.display = 'none';
+        document.getElementById('link-profile').style.display = 'none';
+        
+        // Change logout link to login for guests
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            logoutLink.innerHTML = '<i class="fa-solid fa-sign-in-alt"></i> Login';
+            logoutLink.style.background = '#E3F2FD';
+            logoutLink.style.color = '#1976D2';
+            logoutLink.href = 'login.html';
+            logoutLink.onclick = null; // Remove the logout listener
+        }
     }
 
-    document.getElementById('pBuyerType').addEventListener('change', function () {
-        const isStudent = this.value === 'Student';
-        document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
-        document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
-    });
+    if (user) {
+        if (document.getElementById('pName')) {
+            document.getElementById('pName').value = user.name || '';
+        }
+        if (document.getElementById('pEmail')) {
+            document.getElementById('pEmail').value = user.email || '';
+        }
+        if (document.getElementById('pPhone')) {
+            document.getElementById('pPhone').value = user.phone || '';
+        }
+        if (document.getElementById('pBuyerType')) {
+            document.getElementById('pBuyerType').value = user.buyerType || 'Student';
+            const isStudent = user.buyerType === 'Student';
+            document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
+            document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
+        }
+        if (document.getElementById('pCuetId')) {
+            document.getElementById('pCuetId').value = user.cuetId || '';
+        }
+        if (document.getElementById('pDepartment')) {
+            document.getElementById('pDepartment').value = user.department || '';
+        }
+        if (document.getElementById('pHall')) {
+            document.getElementById('pHall').value = user.residence || '';
+        }
+
+        document.getElementById('pBuyerType').addEventListener('change', function () {
+            const isStudent = this.value === 'Student';
+            document.getElementById('cuetIdGroup').style.display = isStudent ? 'block' : 'none';
+            document.getElementById('deptGroup').style.display = isStudent ? 'block' : 'none';
+        });
+    }
 
     const heroTitle = document.querySelector('#browse .hero-banner h1');
     if (heroTitle) {
-        heroTitle.textContent = 'Hungry, ' + (user.name.split(' ')[0] || 'there') + '?';
+        heroTitle.textContent = 'Hungry, ' + (user ? (user.name.split(' ')[0] || 'there') : 'Guest') + '?';
     }
 
     const menuToggle = document.getElementById('menuToggle');
@@ -528,10 +572,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (loadingScreen) loadingScreen.style.display = 'none';
 
-    document.getElementById('logoutLink').addEventListener('click', function (e) {
-        e.preventDefault();
-        Auth.logout();
-    });
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink && user) {
+        logoutLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            Auth.logout();
+        });
+    }
 
     document.querySelectorAll('input[name="orderType"]').forEach(radio => {
         radio.addEventListener('change', renderCart);

@@ -99,3 +99,16 @@ const Auth = {
 };
 
 window.Auth = Auth;
+// Listen for storage changes (for multiple profiles in same browser)
+window.addEventListener('storage', (e) => {
+    if (e.key === 'bitezy_token') {
+        if (!e.newValue) {
+            // Token removed - logged out in another tab
+            window.location.href = 'index.html';
+        } else {
+            // Token changed - logged in as someone else or renewed in another tab
+            // We reload to ensure the UI matches the current user token
+            window.location.reload();
+        }
+    }
+});

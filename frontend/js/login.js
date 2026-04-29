@@ -5,6 +5,18 @@ document.querySelectorAll('.role-option').forEach(option => {
     });
 });
 
+// Check if already logged in
+document.addEventListener('DOMContentLoaded', async () => {
+    if (Auth.isAuthenticated()) {
+        const user = await Auth.init();
+        if (user) {
+            if (user.role === 'admin') window.location.href = 'admin.html';
+            else if (user.role === 'seller') window.location.href = 'seller.html';
+            else window.location.href = 'customer.html';
+        }
+    }
+});
+
 document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     

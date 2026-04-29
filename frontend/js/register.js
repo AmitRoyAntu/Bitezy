@@ -2,6 +2,18 @@ const roleOptions = document.querySelectorAll('.role-option');
 const buyerFields = document.getElementById('buyerFields');
 const sellerFields = document.getElementById('sellerFields');
 
+// Check if already logged in
+document.addEventListener('DOMContentLoaded', async () => {
+    if (Auth.isAuthenticated()) {
+        const user = await Auth.init();
+        if (user) {
+            if (user.role === 'admin') window.location.href = 'admin.html';
+            else if (user.role === 'seller') window.location.href = 'seller.html';
+            else window.location.href = 'customer.html';
+        }
+    }
+});
+
 roleOptions.forEach(option => {
     option.addEventListener('click', function() {
         roleOptions.forEach(o => o.classList.remove('active'));
