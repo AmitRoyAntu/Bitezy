@@ -1,0 +1,25 @@
+{
+  "reviews": [
+    {
+      "provider": 1,
+      "buyer": 1,
+      "rating": 5,
+      "comment": "Best beef curry in CUET! Always fresh and spicy.",
+      "createdAt": "2026-04-18T14:00:00Z"
+    },
+    {
+      "provider": 6,
+      "buyer": 2,
+      "rating": 4,
+      "comment": "Good environment and the cold coffee is refreshing.",
+      "createdAt": "2026-04-19T11:00:00Z"
+    },
+    {
+      "provider": 7,
+      "buyer": 3,
+      "rating": 5,
+      "comment": "Tareq mama's fuchka is legendary. Highly recommended!",
+      "createdAt": "2026-04-19T21:00:00Z"
+    }
+  ]
+}

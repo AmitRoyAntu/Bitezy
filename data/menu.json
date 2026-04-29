@@ -1,0 +1,154 @@
+{
+  "menu": [
+    {
+      "id": 1,
+      "provider": 1,
+      "name": "Special Beef Curry",
+      "category": "Rice",
+      "price": 130,
+      "desc": "Famous spicy beef curry with tender pieces, slow-cooked to perfection.",
+      "img": "https://placehold.co/150x150/E89993/FFFFFF?text=Beef+Curry",
+      "available": true
+    },
+    {
+      "id": 2,
+      "provider": 1,
+      "name": "Chicken Roast with Polau",
+      "category": "Rice",
+      "price": 150,
+      "desc": "Traditional chicken roast served with aromatic chinigura polau.",
+      "img": "https://placehold.co/150x150/E89993/FFFFFF?text=Polau+Roast",
+      "available": true
+    },
+    {
+      "id": 3,
+      "provider": 1,
+      "name": "Coca-Cola 250ml",
+      "category": "Drinks",
+      "price": 35,
+      "desc": "Chilled refreshing beverage.",
+      "img": "https://placehold.co/150x150/E89993/FFFFFF?text=Coke",
+      "available": true
+    },
+    {
+      "id": 4,
+      "provider": 2,
+      "name": "Beef Tehari",
+      "category": "Rice",
+      "price": 120,
+      "desc": "Old Dhaka style beef tehari with small chunks of beef.",
+      "img": "https://placehold.co/150x150/FF6B6B/FFFFFF?text=Tehari",
+      "available": true
+    },
+    {
+      "id": 5,
+      "provider": 2,
+      "name": "Chicken Khichuri",
+      "category": "Rice",
+      "price": 90,
+      "desc": "Yellow bhuna khichuri with roasted chicken.",
+      "img": "https://placehold.co/150x150/FF6B6B/FFFFFF?text=Khichuri",
+      "available": true
+    },
+    {
+      "id": 6,
+      "provider": 2,
+      "name": "Iced Tea",
+      "category": "Drinks",
+      "price": 25,
+      "desc": "Refreshing homemade iced tea.",
+      "img": "https://placehold.co/150x150/FF6B6B/FFFFFF?text=Iced+Tea",
+      "available": true
+    },
+    {
+      "id": 7,
+      "provider": 3,
+      "name": "Mutton Kacchi Biriani",
+      "category": "Rice",
+      "price": 180,
+      "desc": "Rich and aromatic mutton layered biriani.",
+      "img": "https://placehold.co/150x150/48DBFB/FFFFFF?text=Biriani",
+      "available": true
+    },
+    {
+      "id": 8,
+      "provider": 3,
+      "name": "Chicken Biriani",
+      "category": "Rice",
+      "price": 140,
+      "desc": "Lightly spiced chicken biriani.",
+      "img": "https://placehold.co/150x150/48DBFB/FFFFFF?text=CBiriani",
+      "available": true
+    },
+    {
+      "id": 9,
+      "provider": 4,
+      "name": "Plain Rice & Fish",
+      "category": "Rice",
+      "price": 110,
+      "desc": "Steamed rice with seasonal fish curry and lentils.",
+      "img": "https://placehold.co/150x150/FF9F43/FFFFFF?text=Fish+Rice",
+      "available": true
+    },
+    {
+      "id": 10,
+      "provider": 5,
+      "name": "Vegetable Khichuri",
+      "category": "Rice",
+      "price": 80,
+      "desc": "Healthy mix of vegetables and lentils.",
+      "img": "https://placehold.co/150x150/FF6B35/FFFFFF?text=Veg+Khichuri",
+      "available": true
+    },
+    {
+      "id": 11,
+      "provider": 6,
+      "name": "Chicken Burger",
+      "category": "Fast Food",
+      "price": 85,
+      "desc": "Spicy chicken patty with fresh lettuce and mayo.",
+      "img": "https://placehold.co/150x150/1DD1A1/FFFFFF?text=Burger",
+      "available": true
+    },
+    {
+      "id": 12,
+      "provider": 6,
+      "name": "Crispy French Fries",
+      "category": "Snacks",
+      "price": 50,
+      "desc": "Golden fried potato strips with seasoning.",
+      "img": "https://placehold.co/150x150/1DD1A1/FFFFFF?text=Fries",
+      "available": true
+    },
+    {
+      "id": 13,
+      "provider": 6,
+      "name": "Cold Coffee",
+      "category": "Drinks",
+      "price": 60,
+      "desc": "Creamy blend of coffee and milk.",
+      "img": "https://placehold.co/150x150/1DD1A1/FFFFFF?text=Coffee",
+      "available": true
+    },
+    {
+      "id": 14,
+      "provider": 7,
+      "name": "Egg Burger",
+      "category": "Fast Food",
+      "price": 55,
+      "desc": "Classic egg burger with secret sauce.",
+      "img": "https://placehold.co/150x150/5F27CD/FFFFFF?text=Egg+Burger",
+      "available": true
+    },
+    {
+      "id": 15,
+      "provider": 7,
+      "name": "Fuchka (10pcs)",
+      "category": "Snacks",
+      "price": 40,
+      "desc": "Crispy fuchka with spicy potato filling and tamarind water.",
+      "img": "https://placehold.co/150x150/5F27CD/FFFFFF?text=Fuchka",
+      "available": true
+    }
+  ]
+}
