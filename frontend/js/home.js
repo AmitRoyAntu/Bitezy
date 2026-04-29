@@ -78,14 +78,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof Auth !== 'undefined' && Auth.isAuthenticated()) {
         const user = await Auth.init();
         if (user) {
+            // Redirect Sellers and Admins away from home page
+            if (user.role === 'admin') {
+                window.location.href = 'admin.html';
+                return;
+            }
+            if (user.role === 'seller') {
+                window.location.href = 'seller.html';
+                return;
+            }
+
+            // For Customers, just update the navbar
             const navBtns = document.querySelector('.nav-btns');
             if (navBtns) {
-                let dashboardUrl = 'customer.html';
-                if (user.role === 'admin') dashboardUrl = 'admin.html';
-                else if (user.role === 'seller') dashboardUrl = 'seller.html';
-                
                 navBtns.innerHTML = `
-                    <a href="${dashboardUrl}" class="btn btn-text">Dashboard</a>
+                    <a href="customer.html" class="btn btn-text">Dashboard</a>
                     <a href="#" id="logoutBtn" class="btn btn-primary">Logout</a>
                 `;
                 

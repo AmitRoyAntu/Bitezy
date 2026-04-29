@@ -313,16 +313,16 @@ function removeItem(index) {
 
 
 async function placeOrder() {
-    if (!Auth.isAuthenticated()) {
-        if (confirm("You need to login to place an order. Redirect to login page?")) {
-            window.location.href = 'login.html?redirect=customer.html';
-        }
-        return;
-    }
-
     const user = Auth.getUser();
-    if (user && user.role !== 'buyer') {
-        showToast("Only customer accounts can place orders.", 'error');
+    if (!user || user.role !== 'buyer') {
+        const msg = !user ? "You need to login to place an order." : "Only customer accounts (Student/Teacher/Staff) can place orders.";
+        if (!user) {
+            if (confirm(msg + " Redirect to login page?")) {
+                window.location.href = 'login.html?redirect=customer.html';
+            }
+        } else {
+            showToast(msg, 'error');
+        }
         return;
     }
 
@@ -467,32 +467,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Auth (fetches profile from DB)
     const user = await Auth.init();
 
-    // Allow guests, buyers, and staff
     const isGuest = !Auth.isAuthenticated();
-    const isStaff = user && user.role === 'staff';
     const isBuyer = user && user.role === 'buyer';
-
-    if (!isGuest && !isBuyer && !isStaff) {
-        alert('Access denied. This page is for customers and staff.');
-        window.location.href = 'index.html';
-        return;
-    }
 
     // Populate UI with fetched user data or guest defaults
     if (user) {
         document.getElementById('navbarName').textContent = user.name || 'User';
-        document.getElementById('navbarHall').textContent = user.residence || '';
+        document.getElementById('navbarHall').textContent = user.residence || user.buyerType || '';
         
-        // Hide/Show sections based on role if needed
-        if (isStaff) {
-            document.getElementById('link-history').style.display = 'none';
-            document.getElementById('link-profile').style.display = 'none';
+        // Hide private sections for non-buyers (Sellers/Admins browsing the customer view)
+        if (!isBuyer) {
+            if (document.getElementById('link-history')) document.getElementById('link-history').style.display = 'none';
+            if (document.getElementById('link-profile')) document.getElementById('link-profile').style.display = 'none';
         }
     } else {
         document.getElementById('navbarName').textContent = 'Guest User';
         document.getElementById('navbarHall').textContent = 'Sign in to order';
-        document.getElementById('link-history').style.display = 'none';
-        document.getElementById('link-profile').style.display = 'none';
+        if (document.getElementById('link-history')) document.getElementById('link-history').style.display = 'none';
+        if (document.getElementById('link-profile')) document.getElementById('link-profile').style.display = 'none';
         
         // Change logout link to login for guests
         const logoutLink = document.getElementById('logoutLink');
@@ -501,7 +493,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             logoutLink.style.background = '#E3F2FD';
             logoutLink.style.color = '#1976D2';
             logoutLink.href = 'login.html';
-            logoutLink.onclick = null; // Remove the logout listener
+            logoutLink.onclick = null;
         }
     }
 
