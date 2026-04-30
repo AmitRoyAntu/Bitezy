@@ -89,6 +89,10 @@ h1, h2, h3, h4, h5, h6 {
 .nav-logo i {
     color: var(--primary);
 }
+.nav-logo img {
+    display: block;
+    flex-shrink: 0;
+}
 /* This makes the gradient text work */
 .nav-logo.gradient-text {
     background: var(--primary-gradient);
