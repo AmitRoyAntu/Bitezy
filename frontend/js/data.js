@@ -1,5 +1,7 @@
 const DataService = {
-    baseUrl: 'http://localhost:8002/api',
+    baseUrl: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+        ? 'http://localhost:8002/api' 
+        : '/api',
     
     async getAuthToken() {
         return localStorage.getItem('bitezy_token');
