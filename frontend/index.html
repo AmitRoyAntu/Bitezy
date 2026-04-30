@@ -14,12 +14,32 @@
 <body>
 
     <nav class="navbar">
-        <a href="index.html" class="nav-logo"><img src="assets/logo.png" alt="Bitezy" class="logo-img"></a>
-            <div class="nav-btns">
-                <a href="login.html" class="btn btn-text">Sign In</a>
-                <a href="register.html" class="btn btn-primary">Get Started</a>
-            </div>
-        </nav>
+        <div style="display:flex; align-items:center; gap: 15px;">
+            <i class="fa-solid fa-bars menu-toggle" id="menuToggle"></i>
+            <a href="index.html" class="nav-logo"><img src="assets/logo.png" alt="Bitezy" class="logo-img"></a>
+        </div>
+        <div class="nav-btns desktop-only">
+            <a href="login.html" class="btn btn-text">Sign In</a>
+            <a href="register.html" class="btn btn-primary">Get Started</a>
+        </div>
+    </nav>
+    
+    <aside class="sidebar" id="mobileSidebar">
+        <div class="nav-links">
+            <a href="login.html" class="sidebar-link">
+                <i class="fa-solid fa-sign-in-alt"></i> Sign In
+            </a>
+            <a href="register.html" class="sidebar-link active">
+                <i class="fa-solid fa-user-plus"></i> Get Started
+            </a>
+            <a href="#features" class="sidebar-link" onclick="document.getElementById('mobileSidebar').classList.remove('open')">
+                <i class="fa-solid fa-star"></i> How It Works
+            </a>
+            <a href="customer.html" class="sidebar-link">
+                <i class="fa-solid fa-compass"></i> Browse Menus
+            </a>
+        </div>
+    </aside>
     
     <main>
         <section class="hero">

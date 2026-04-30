@@ -432,6 +432,21 @@
     .hero-image-wrapper {
         margin: 0 auto;
     }
+    
+    .desktop-only {
+        display: none !important;
+    }
+}
+
+/* Ensure mobile sidebar on landing page is completely hidden on large screens */
+#mobileSidebar {
+    left: -300px;
+    transition: left 0.3s ease-in-out;
+    box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
+}
+
+#mobileSidebar.open {
+    left: 0;
 }
 
 @media (max-width: 768px) {
