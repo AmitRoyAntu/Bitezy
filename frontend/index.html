@@ -14,35 +14,68 @@
 <body>
 
     <nav class="navbar">
-        <div class="nav-logo"><img src="assets/logo.png" alt="Bitezy" class="logo-img"></div>
+        <a href="index.html" class="nav-logo"><img src="assets/logo.png" alt="Bitezy" class="logo-img"></a>
             <div class="nav-btns">
                 <a href="login.html" class="btn btn-text">Sign In</a>
                 <a href="register.html" class="btn btn-primary">Get Started</a>
             </div>
         </nav>
     
+    <main>
         <section class="hero">
-            <div class="hero-content">
-                <h1>Your Favorite Bites, <br>Delivered to <span>Your Hall.</span></h1>
-                <p>The smartest food ordering platform for CUET. Browse menus from all hall canteens and cafeterias, and get your food delivered or ready for pickup in minutes.</p>
-            <a href="customer.html" class="btn btn-primary" style="padding: 15px 40px; font-size: 18px;">Browse Menu <i class="fa-solid fa-arrow-right"></i></a>
+            <div class="hero-container">
+                <div class="hero-content-left animate-on-scroll">
+                    <h1>Your Favorite Bites, <br>Delivered to <span>Your Hall.</span></h1>
+                    <p>The smartest food ordering platform for CUET. Browse menus from all hall canteens and cafeterias, and get your food delivered or ready for pickup in minutes.</p>
+                    <div class="hero-actions">
+                        <a href="customer.html" class="btn btn-primary btn-large">Order Now <i class="fa-solid fa-arrow-right"></i></a>
+                        <a href="#features" class="btn btn-outline btn-large">Explore Menus</a>
+                    </div>
+                    <div class="trust-badge">
+                        <div class="avatars">
+                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User">
+                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="User">
+                            <img src="https://randomuser.me/api/portraits/men/86.jpg" alt="User">
+                        </div>
+                        <span>Trusted by <strong>1000+</strong> users at CUET</span>
+                    </div>
+                </div>
+                <div class="hero-content-right animate-on-scroll" style="transition-delay: 0.2s;">
+                    <div class="hero-image-wrapper">
+                        <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Delicious Food" class="hero-main-img">
+                        <div class="floating-badge badge-1">
+                            <div class="badge-icon"><i class="fa-solid fa-motorcycle"></i></div>
+                            <div class="badge-text">
+                                <strong>Fast Delivery</strong>
+                                <span>~15 mins</span>
+                            </div>
+                        </div>
+                        <div class="floating-badge badge-2">
+                            <div class="badge-icon" style="background: var(--success); color: white;"><i class="fa-solid fa-star"></i></div>
+                            <div class="badge-text">
+                                <strong>Top Rated</strong>
+                                <span>4.8/5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
 
-    <section class="features">
-        <h2 class="section-title">How It Works</h2>
+    <section class="features" id="features">
+        <h2 class="section-title animate-on-scroll">How It Works</h2>
         <div class="feature-grid">
-            <div class="feature-card">
+            <div class="feature-card animate-on-scroll" style="transition-delay: 0.1s;">
                 <div class="f-icon"><i class="fa-solid fa-search"></i></div>
                 <div class="f-title">Browse Providers</div>
                 <div class="f-desc">Explore menus from QK Hall, Sufia Kamal Hall, Central Cafeteria, and more.</div>
             </div>
-            <div class="feature-card">
+            <div class="feature-card animate-on-scroll" style="transition-delay: 0.2s;">
                 <div class="f-icon"><i class="fa-solid fa-shopping-basket"></i></div>
                 <div class="f-title">Easy Ordering</div>
                 <div class="f-desc">Add items to your cart. Choose between "Delivery to Room" or "Self Pickup".</div>
             </div>
-            <div class="feature-card">
+            <div class="feature-card animate-on-scroll" style="transition-delay: 0.3s;">
                 <div class="f-icon"><i class="fa-solid fa-clock"></i></div>
                 <div class="f-title">Live Tracking</div>
                 <div class="f-desc">Track your food status from Preparing to On the Way in real-time.</div>
@@ -50,15 +83,23 @@
         </div>
     </section>
 
+    <section class="map-section animate-on-scroll">
+        <h2 class="section-title">Find Us at CUET</h2>
+        <div class="map-container">
+            <iframe src="https://maps.google.com/maps?q=Chittagong%20University%20of%20Engineering%20and%20Technology&t=&z=15&ie=UTF8&iwloc=&output=embed" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+    </section>
+    </main>
+
     <footer class="footer">
         <div class="footer-grid">
             <div class="footer-col">
                 <h3>Bitezy</h3>
                 <p>Making campus dining smarter, faster, and easier for everyone at CUET.</p>
                 <div class="social-icons">
-                    <a href="#"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
                 </div>
             </div>
             
@@ -69,6 +110,7 @@
                     <li><a href="login.html">Sign In</a></li>
                     <li><a href="register.html">Register</a></li>
                     <li><a href="#">About Us</a></li>
+                    <li><a href="#features">How It Works</a></li>
                     <li><a href="#">Contact Support</a></li>
                 </ul>
             </div>
@@ -76,7 +118,7 @@
             <div class="footer-col">
                 <h3>Contact Us</h3>
                 <ul class="footer-links">
-                    <li><i class="fa-solid fa-envelope"></i> support@bitezy.com</li>
+                    <li><i class="fa-solid fa-envelope"></i> bitezyBusiness@gmail.com</li>
                     <li><i class="fa-solid fa-phone"></i> +880 1234 567890</li>
                     <li><i class="fa-solid fa-map-marker-alt"></i> CUET, Chittagong, Bangladesh</li>
                 </ul>

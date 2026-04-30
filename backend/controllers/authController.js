@@ -341,11 +341,124 @@ const calculateIsOpen = (openTime, closeTime) => {
     return currentTime >= openMinutes && currentTime < closeMinutes;
 };
 
+// POST /api/auth/forgot-password (Public)
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        const user = await User.findOne({ email });
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User with this email not found' });
+        }
+
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        user.otpCode = otp;
+        user.otpExpires = Date.now() + (5 * 60 * 1000); // 5 minutes for password reset
+        await user.save();
+
+        const mailOptions = {
+            to: email,
+            subject: 'Bitezy Password Reset',
+            text: `Your password reset code is ${otp}. It will expire in 5 minutes.`,
+            html: `
+            <div style="font-family: 'Inter', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e1e1; border-radius: 12px; background-color: #ffffff;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="margin: 0; font-size: 32px; font-weight: 800; color: #0f583e;">bite<span style="color: #EE5253;">zy</span></h1>
+                </div>
+                <div style="background-color: #f9fafb; border-radius: 8px; padding: 30px; text-align: center; margin-bottom: 30px;">
+                    <p style="margin: 0; color: #4b5563; font-size: 16px; font-weight: 500;">Your Password Reset Code</p>
+                    <h2 style="margin: 15px 0; color: #111827; font-size: 36px; font-weight: 800; letter-spacing: 4px;">${otp}</h2>
+                    <p style="margin: 0; color: #9ca3af; font-size: 13px;">This code expires in <span style="color: #dc2626; font-weight: 600;">5 minutes</span></p>
+                </div>
+                <div style="color: #374151; font-size: 14px; line-height: 1.6;">
+                    <p>Hi there,</p>
+                    <p>We received a request to reset your Bitezy password. Please use the verification code above to complete your reset process.</p>
+                </div>
+            </div>
+            `
+        };
+
+        try {
+            const sent = await sendMail(mailOptions);
+            if (sent) {
+                return res.json({ message: 'Reset code sent to your email.' });
+            }
+        } catch (mailErr) {
+            console.error('Error sending reset email:', mailErr.message || mailErr);
+        }
+
+        console.log(`Password reset OTP for ${email}: ${otp}`);
+        return res.json({ message: 'Reset code generated. (Email delivery not configured)' });
+        
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+// POST /api/auth/reset-password (Public)
+const resetPassword = async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+        
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ message: 'Email, OTP, and new password are required' });
+        }
+
+        const user = await User.findOne({ email });
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        if (!user.otpCode || !user.otpExpires || user.otpExpires < Date.now()) {
+            return res.status(400).json({ message: 'Reset code expired or not requested' });
+        }
+
+        if (user.otpCode !== otp.toString()) {
+            return res.status(400).json({ message: 'Invalid reset code' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        
+        user.otpCode = undefined;
+        user.otpExpires = undefined;
+        
+        await user.save();
+
+        let shopName = undefined;
+        if (user.role === 'seller') {
+            const provider = await Provider.findOne({ seller: user._id });
+            shopName = provider ? provider.name : undefined;
+        }
+
+        return res.json({
+            message: 'Password has been successfully reset',
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            phone: user.phone,
+            residence: user.residence,
+            buyerType: user.buyerType,
+            cuetId: user.cuetId,
+            department: user.department,
+            shopName: shopName,
+            token: generateToken(user._id),
+        });
+        
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     verifyOtp,
     updateProfile,
-    getMe
+    getMe,
+    forgotPassword,
+    resetPassword
 };
 

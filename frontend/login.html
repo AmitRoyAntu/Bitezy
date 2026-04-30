@@ -26,10 +26,11 @@
             <a href="index.html" class="mobile-back-link"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
         
         <div class="auth-card">
-            <div class="auth-header">
-                <h1>Welcome Back</h1>
-                <p>Sign in to your Bitezy account</p>
-            </div>
+            <div id="loginSection">
+                <div class="auth-header">
+                    <h1>Welcome Back</h1>
+                    <p>Sign in to your Bitezy account</p>
+                </div>
 
             <form id="loginForm">
                 <div class="form-group">
@@ -39,7 +40,10 @@
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Password</label>
+                    <div class="label-row">
+                        <label class="form-label">Password</label>
+                        <a href="#" class="forgot-password-link">Forgot password?</a>
+                    </div>
                     <input type="password" id="loginPassword" class="form-input" placeholder="Enter your password" required>
                     <div class="field-error" id="passwordError"><i class="fa-solid fa-circle-exclamation"></i> <span>Password is required</span></div>
                 </div>
@@ -66,9 +70,49 @@
                 </form>
             </div>
 
-            <div class="auth-footer">
-                Don't have an account? <a href="register.html">Create one</a>
+                    <div class="auth-footer">
+                        Don't have an account? <a href="register.html">Create one</a>
+                    </div>
+                </div>
+
+            <!-- Forgot Password Section -->
+            <div id="forgotPasswordSection" style="display:none;">
+                <div class="auth-header">
+                    <h1 id="forgotPasswordTitle">Reset Password</h1>
+                    <p id="forgotPasswordDesc">Enter your email to receive a reset code</p>
+                </div>
+                
+                <!-- Step 1: Request OTP -->
+                <form id="forgotPasswordEmailForm">
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="text" id="forgotEmailInput" class="form-input" placeholder="e.g. demo@cuet.ac.bd" required>
+                        <div class="field-error" id="forgotEmailError"><i class="fa-solid fa-circle-exclamation"></i> <span>Please enter a valid email</span></div>
+                    </div>
+                    <button type="submit" class="submit-btn" id="forgotEmailSubmitBtn">Send Reset Code</button>
+                    <div class="otp-footer" style="margin-top: 15px;">
+                        <button type="button" class="link-btn cancel-forgot-btn"><i class="fa-solid fa-arrow-left"></i> Back to Login</button>
+                    </div>
+                </form>
+
+                <!-- Step 2: Verify OTP & Reset Password -->
+                <form id="forgotPasswordResetForm" style="display:none;">
+                    <div class="form-group">
+                        <label class="form-label">Reset Code (OTP)</label>
+                        <input type="text" id="forgotOtpInput" class="form-input" placeholder="6-digit code" maxlength="6" inputmode="numeric" pattern="\d*" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">New Password</label>
+                        <input type="password" id="forgotNewPasswordInput" class="form-input" placeholder="Enter new password" required>
+                        <div class="field-error" id="forgotResetError"><i class="fa-solid fa-circle-exclamation"></i> <span>Error resetting password</span></div>
+                    </div>
+                    <button type="submit" class="submit-btn" id="forgotResetSubmitBtn">Change Password</button>
+                    <div class="otp-footer" style="margin-top: 15px;">
+                        <button type="button" class="link-btn cancel-forgot-btn">Cancel</button>
+                    </div>
+                </form>
             </div>
+            
         </div>
     </div>
     </div>

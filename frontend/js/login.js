@@ -214,3 +214,133 @@ document.getElementById('cancelOtp').addEventListener('click', function() {
         submitBtn.disabled = false;
     }
 });
+
+// --- FORGOT PASSWORD LOGIC ---
+let forgotPasswordEmail = null;
+
+// Toggle Forgot Password UI
+document.querySelector('.forgot-password-link').addEventListener('click', function(e) {
+    e.preventDefault();
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('forgotPasswordSection').style.display = 'block';
+    
+    // Reset forms
+    document.getElementById('forgotPasswordEmailForm').style.display = 'block';
+    document.getElementById('forgotPasswordResetForm').style.display = 'none';
+    document.getElementById('forgotEmailInput').value = '';
+    document.getElementById('forgotOtpInput').value = '';
+    document.getElementById('forgotNewPasswordInput').value = '';
+    
+    document.querySelectorAll('.field-error').forEach(el => el.classList.remove('show'));
+});
+
+// Cancel Forgot Password
+document.querySelectorAll('.cancel-forgot-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.getElementById('forgotPasswordSection').style.display = 'none';
+        document.getElementById('loginSection').style.display = 'block';
+    });
+});
+
+// Submit Email for Forgot Password
+document.getElementById('forgotPasswordEmailForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('forgotEmailInput').value;
+    const errorEl = document.getElementById('forgotEmailError');
+    errorEl.classList.remove('show');
+    
+    if (!email.trim()) {
+        errorEl.classList.add('show');
+        return;
+    }
+    
+    forgotPasswordEmail = email;
+    const submitBtn = document.getElementById('forgotEmailSubmitBtn');
+    
+    // Optimistic UI: Immediately show the next step
+    document.getElementById('forgotPasswordEmailForm').style.display = 'none';
+    document.getElementById('forgotPasswordResetForm').style.display = 'block';
+    
+    const otpInput = document.getElementById('forgotOtpInput');
+    if (otpInput) {
+        otpInput.value = '';
+        otpInput.focus();
+    }
+    
+    showToast('Sending reset code to your email...');
+    
+    // Perform the actual request in the background
+    (async () => {
+        try {
+            const response = await DataService.request('/auth/forgot-password', 'POST', { email });
+            showToast(response.message || 'OTP sent successfully');
+        } catch (error) {
+            // Revert UI on failure
+            document.getElementById('forgotPasswordEmailForm').style.display = 'block';
+            document.getElementById('forgotPasswordResetForm').style.display = 'none';
+            
+            errorEl.querySelector('span').innerText = error.message || 'Error sending request';
+            errorEl.classList.add('show');
+            showToast(error.message || 'Failed to send reset code', 'error');
+        }
+    })();
+});
+
+// Submit OTP & New Password for Reset
+document.getElementById('forgotPasswordResetForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const otp = document.getElementById('forgotOtpInput').value;
+    const newPassword = document.getElementById('forgotNewPasswordInput').value;
+    const errorEl = document.getElementById('forgotResetError');
+    errorEl.classList.remove('show');
+    
+    if (!otp.trim() || !newPassword.trim()) {
+        errorEl.querySelector('span').innerText = 'Please fill all fields';
+        errorEl.classList.add('show');
+        return;
+    }
+    
+    const submitBtn = document.getElementById('forgotResetSubmitBtn');
+    const originalText = submitBtn.innerText;
+    
+    try {
+        submitBtn.disabled = true;
+        submitBtn.innerText = 'Resetting...';
+        
+        const response = await DataService.request('/auth/reset-password', 'POST', { 
+            email: forgotPasswordEmail, 
+            otp, 
+            newPassword 
+        });
+        
+        if (response && response.token) {
+            const userData = {
+                id: response._id,
+                name: response.name,
+                email: response.email,
+                role: response.role
+            };
+            showToast('Password reset successful! Logging you in...');
+            
+            setTimeout(() => {
+                Auth.login(userData, response.token);
+            }, 1000);
+        } else {
+            showToast(response.message || 'Password reset successful');
+            
+            // Fallback: Back to login
+            document.getElementById('forgotPasswordSection').style.display = 'none';
+            document.getElementById('loginSection').style.display = 'block';
+            document.getElementById('loginPassword').value = '';
+        }
+        
+    } catch (error) {
+        errorEl.querySelector('span').innerText = error.message || 'Invalid OTP';
+        errorEl.classList.add('show');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalText;
+    }
+});
