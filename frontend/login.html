@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In - Bitezy</title>
+    <meta name="description" content="Sign in to your Bitezy account to order food from CUET campus canteens and food providers.">
+    <link rel="icon" type="image/png" href="assets/favicon.png?v=10">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/shared.css">
@@ -32,8 +34,27 @@
                     <div class="field-error" id="passwordError"><i class="fa-solid fa-circle-exclamation"></i> <span>Password is required</span></div>
                 </div>
 
-                <button type="submit" class="submit-btn">Sign In</button>
+                <button type="submit" class="submit-btn" id="loginSubmitBtn">Get OTP</button>
             </form>
+
+            <!-- OTP section shown after successful password verification -->
+            <div id="otpSection" style="display:none; margin-top:20px;">
+                <form id="otpForm">
+                    <div class="form-group">
+                        <label class="form-label">One-time code (OTP)</label>
+                        <input type="text" id="otpInput" class="form-input" placeholder="6-digit code" maxlength="6" inputmode="numeric" pattern="\d*" required>
+                        <div class="field-error" id="otpError"><i class="fa-solid fa-circle-exclamation"></i> <span>OTP is required</span></div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn" id="otpSubmitBtn">Sign In</button>
+                    
+                    <div class="otp-footer">
+                        <span id="resendContainer">Didn't get the code? <button type="button" class="link-btn" id="resendOtp">Resend OTP</button></span>
+                        <span class="divider">|</span>
+                        <button type="button" class="link-btn" id="cancelOtp">Go Back</button>
+                    </div>
+                </form>
+            </div>
 
             <div class="auth-footer">
                 Don't have an account? <a href="register.html">Create one</a>

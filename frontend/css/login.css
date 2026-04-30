@@ -133,3 +133,37 @@ body {
 .error-message.show {
     display: block;
 }
+
+/* Link-style buttons for OTP actions */
+.otp-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--gray);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+}
+.link-btn {
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    font-size: 14px;
+    transition: 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+.link-btn:hover {
+    text-decoration: underline;
+}
+.link-btn:disabled {
+    color: var(--gray);
+    cursor: not-allowed;
+    text-decoration: none;
+}
+.divider {
+    color: #eee;
+}

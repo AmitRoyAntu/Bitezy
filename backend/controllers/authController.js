@@ -2,15 +2,16 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const { User, Buyer, Seller } = require('../models/User');
 const Provider = require('../models/Provider');
+const { sendMail } = require('../utils/mailer');
 
 // POST /api/auth/register (Public)
 const registerUser = async (req, res) => {
     try {
-        const { 
-            name, email, password, phone, role, 
-            buyerType, cuetId, department, residence, 
+        const {
+            name, email, password, phone, role,
+            buyerType, cuetId, department, residence,
             shopName, location, description, openTime, closeTime,
-            type, deliveryTime, img 
+            type, deliveryTime, img
         } = req.body;
 
         if (!name || !email || !password || !phone) {
@@ -87,31 +88,105 @@ const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
         const user = await User.findOne({ email });
-
         if (user && (await bcrypt.compare(password, user.password))) {
-            let shopName = undefined;
-            if (user.role === 'seller') {
-                const provider = await Provider.findOne({ seller: user._id });
-                shopName = provider ? provider.name : undefined;
+            // Generate a 6-digit OTP, save it with expiry (1 minute)
+            const otp = Math.floor(100000 + Math.random() * 900000).toString();
+            user.otpCode = otp;
+            user.otpExpires = Date.now() + (1 * 60 * 1000); // 1 minute
+            await user.save();
+
+            // Try to send OTP via configured email provider. If not configured, fall back to console log.
+            const mailOptions = {
+                to: email,
+                subject: 'Bitezy Security Code',
+                text: `Your Bitezy verification code is ${otp}. It will expire in 1 minute.`,
+                html: `
+                <div style="font-family: 'Inter', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e1e1e1; border-radius: 12px; background-color: #ffffff;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; color: #0f583e;">bite<span style="color: #EE5253;">zy</span></h1>
+                        <p style="color: #666; font-size: 14px; margin-top: 5px;">Your Hunger, Our Priority</p>
+                    </div>
+                    <div style="background-color: #f9fafb; border-radius: 8px; padding: 30px; text-align: center; margin-bottom: 30px;">
+                        <p style="margin: 0; color: #4b5563; font-size: 16px; font-weight: 500;">Your One-Time Password (OTP)</p>
+                        <h2 style="margin: 15px 0; color: #111827; font-size: 36px; font-weight: 800; letter-spacing: 4px;">${otp}</h2>
+                        <p style="margin: 0; color: #9ca3af; font-size: 13px;">This code expires in <span style="color: #dc2626; font-weight: 600;">1 minute</span></p>
+                    </div>
+                    <div style="color: #374151; font-size: 14px; line-height: 1.6;">
+                        <p>Hi there,</p>
+                        <p>We received a request to sign in to your Bitezy account. Please use the verification code above to complete your login.</p>
+                        <p style="color: #ef4444; font-weight: 500;">If you didn't request this code, please ignore this email or contact support if you have concerns.</p>
+                    </div>
+                    <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+                        <p style="margin: 0; color: #9ca3af; font-size: 12px;">&copy; 2026 Bitezy Inc. • CUET, Chittagong</p>
+                    </div>
+                </div>
+                `
+            };
+
+            try {
+                const sent = await sendMail(mailOptions);
+                if (sent) {
+                    return res.json({ message: 'OTP sent. Verify to complete login.' });
+                }
+            } catch (mailErr) {
+                console.error('Error sending OTP email:', mailErr.message || mailErr);
             }
 
-            return res.json({
-                _id: user.id,
-                name: user.name,
-                email: user.email,
-                role: user.role,
-                phone: user.phone,
-                residence: user.residence,
-                buyerType: user.buyerType,
-                cuetId: user.cuetId,
-                department: user.department,
-                shopName: shopName,
-                token: generateToken(user._id),
-            });
-        } else {
-            console.log(`Login attempt failed for: ${email}`);
-            return res.status(401).json({ message: 'Invalid credentials' });
+            // Fallback: log OTP to server console when not configured or sending failed
+            console.log(`OTP for ${email}: ${otp}`);
+
+            return res.json({ message: 'OTP generated. (Email delivery not configured)' });
         }
+
+        console.log(`Login attempt failed for: ${email}`);
+        return res.status(401).json({ message: 'Invalid credentials' });
+    } catch (error) {
+        return res.status(500).json({ message: error.message });
+    }
+};
+
+// POST /api/auth/verify-otp (Public)
+const verifyOtp = async (req, res) => {
+    try {
+        const { email, otp } = req.body;
+        if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
+
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        if (!user.otpCode || !user.otpExpires || user.otpExpires < Date.now()) {
+            return res.status(400).json({ message: 'OTP expired or not requested' });
+        }
+
+        if (user.otpCode !== otp.toString()) {
+            return res.status(400).json({ message: 'Invalid OTP' });
+        }
+
+        // Clear OTP fields
+        user.otpCode = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        // Prepare response (include shopName for sellers)
+        let shopName = undefined;
+        if (user.role === 'seller') {
+            const provider = await Provider.findOne({ seller: user._id });
+            shopName = provider ? provider.name : undefined;
+        }
+
+        return res.json({
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            phone: user.phone,
+            residence: user.residence,
+            buyerType: user.buyerType,
+            cuetId: user.cuetId,
+            department: user.department,
+            shopName: shopName,
+            token: generateToken(user._id),
+        });
     } catch (error) {
         return res.status(500).json({ message: error.message });
     }
@@ -156,7 +231,7 @@ const updateProfile = async (req, res) => {
             const currentOpen = req.body.openTime || (provider ? provider.openTime : '08:00');
             const currentClose = req.body.closeTime || (provider ? provider.closeTime : '20:00');
             const isOpen = calculateIsOpen(currentOpen, currentClose);
-            
+
             const providerFields = {
                 name: req.body.shopName,
                 location: req.body.location,
@@ -247,7 +322,7 @@ const calculateIsOpen = (openTime, closeTime) => {
     const now = new Date();
     const utcTime = now.getTime() + (now.getTimezoneOffset() * 60000);
     const bdTime = new Date(utcTime + (3600000 * 6));
-    
+
     const currentH = bdTime.getHours();
     const currentM = bdTime.getMinutes();
     const currentTime = currentH * 60 + currentM;
@@ -261,7 +336,7 @@ const calculateIsOpen = (openTime, closeTime) => {
     if (closeMinutes < openMinutes) {
         return currentTime >= openMinutes || currentTime < closeMinutes;
     }
-    
+
     // 09:00 → 22:00
     return currentTime >= openMinutes && currentTime < closeMinutes;
 };
@@ -269,6 +344,7 @@ const calculateIsOpen = (openTime, closeTime) => {
 module.exports = {
     registerUser,
     loginUser,
+    verifyOtp,
     updateProfile,
     getMe
 };
