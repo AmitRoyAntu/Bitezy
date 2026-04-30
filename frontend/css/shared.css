@@ -24,35 +24,40 @@
     /* Layout Dimensions */
     --header-h: 80px;
     --sidebar-w: 260px;
-    
+
     /* UI Metrics */
     --radius: 16px;
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.04);
-    --shadow-md: 0 5px 15px rgba(0,0,0,0.05);
-    --shadow-lg: 0 10px 30px rgba(0,0,0,0.08);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 /* Global Reset & Defaults */
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-    text-decoration: none; 
-    list-style: none; 
-    outline: none; 
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    text-decoration: none;
+    list-style: none;
+    outline: none;
 }
 
-body { 
-    background-color: var(--bg); 
-    font-family: 'Inter', sans-serif; 
+body {
+    background-color: var(--bg);
+    font-family: 'Inter', sans-serif;
     color: var(--dark);
-    display: flex; 
-    flex-direction: column; 
+    display: flex;
+    flex-direction: column;
     min-height: 100vh;
     overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, h6 { 
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     color: var(--dark);
@@ -86,14 +91,17 @@ h1, h2, h3, h4, h5, h6 {
     letter-spacing: -0.5px;
     cursor: pointer;
 }
+
 .nav-logo i {
     color: var(--primary);
 }
+
 .nav-logo .logo-img {
     height: 95px;
     width: auto;
     display: block;
 }
+
 /* This makes the gradient text work */
 .nav-logo.gradient-text {
     background: var(--primary-gradient);
@@ -118,6 +126,7 @@ h1, h2, h3, h4, h5, h6 {
     padding: 30px 20px;
     z-index: 900;
 }
+
 .sidebar-link {
     display: flex;
     align-items: center;
@@ -130,21 +139,25 @@ h1, h2, h3, h4, h5, h6 {
     cursor: pointer;
     margin-bottom: 5px;
 }
+
 .sidebar-link:hover {
     background: var(--primary-light);
     color: var(--primary);
     transform: translateX(5px);
 }
+
 .sidebar-link.active {
     background: var(--primary);
     color: var(--white);
     box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
 }
+
 .sidebar-link.active:hover {
     background: var(--primary);
     color: var(--white);
     transform: translateX(0);
 }
+
 .sidebar-bottom {
     border-top: 1px solid var(--border);
     padding-top: 20px;
@@ -167,6 +180,7 @@ h1.page-title {
     margin-bottom: 8px;
     font-weight: 700;
 }
+
 p.subtitle {
     color: var(--gray);
     font-size: 15px;
@@ -183,6 +197,7 @@ p.subtitle {
     transition: 0.3s;
     border: 1px solid transparent;
 }
+
 .card:hover {
     transform: translateY(-3px);
     box-shadow: var(--shadow-lg);
@@ -191,7 +206,8 @@ p.subtitle {
 /* Buttons */
 .btn {
     padding: 10px 24px;
-    border-radius: 50px; /* Pill shape for general buttons */
+    border-radius: 50px;
+    /* Pill shape for general buttons */
     border: none;
     cursor: pointer;
     font-weight: 600;
@@ -202,43 +218,70 @@ p.subtitle {
     justify-content: center;
     gap: 8px;
 }
+
 .btn:hover {
     transform: translateY(-2px);
 }
+
 .btn:active {
     transform: translateY(0);
 }
+
 .btn-primary {
     background: var(--primary-gradient);
     color: white;
     box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
 }
+
 .btn-primary:hover {
     box-shadow: 0 8px 20px rgba(255, 107, 107, 0.5);
 }
+
 .btn-text {
     background: transparent;
     color: var(--dark);
 }
+
 .btn-text:hover {
     color: var(--primary);
 }
+
 /* More rectangular button for dashboards */
 .btn-square {
     border-radius: 8px;
     padding: 10px 20px;
     font-size: 13px;
 }
-.btn-success { background: var(--success); color: white; }
-.btn-danger { background: var(--danger); color: white; }
-.btn-info { background: var(--info); color: white; }
-.btn-purple { background: var(--purple); color: white; }
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-info {
+    background: var(--info);
+    color: white;
+}
+
+.btn-purple {
+    background: var(--purple);
+    color: white;
+}
+
 .btn-outline {
     border: 1px solid var(--border);
     background: white;
     color: var(--dark);
 }
-.btn-outline:hover { border-color: var(--dark); }
+
+.btn-outline:hover {
+    border-color: var(--dark);
+}
 
 
 /* Tables */
@@ -247,6 +290,7 @@ table {
     border-collapse: separate;
     border-spacing: 0 10px;
 }
+
 th {
     text-align: left;
     padding: 15px 20px;
@@ -256,25 +300,31 @@ th {
     letter-spacing: 0.5px;
     font-weight: 600;
 }
+
 td {
     padding: 20px;
     color: var(--dark);
-    background: var(--bg); /* Slightly different from card for depth */
+    background: var(--bg);
+    /* Slightly different from card for depth */
     font-size: 14px;
     vertical-align: middle;
 }
+
 tr td:first-child {
     border-top-left-radius: 12px;
     border-bottom-left-radius: 12px;
 }
+
 tr td:last-child {
     border-top-right-radius: 12px;
     border-bottom-right-radius: 12px;
 }
+
 tbody tr {
-     box-shadow: var(--shadow-sm);
-     transition: all 0.2s ease-in-out;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease-in-out;
 }
+
 tbody tr:hover {
     transform: scale(1.02);
     box-shadow: var(--shadow-md);
@@ -291,14 +341,36 @@ tbody tr:hover {
     letter-spacing: 0.5px;
     display: inline-block;
 }
-.status-pending { background: #FFF4E5; color: #FF9F43; }
-.status-preparing { background: #F3F3F3; color: #576574; }
-.status-ontheway, .status-ready { background: #E3F2FD; color: #2E86DE; }
-.status-delivered, .status-picked-up { background: #E8F5E9; color: #27AE60; }
-.status-cancelled { background: #FFEBEE; color: #D63031; }
+
+.status-pending {
+    background: #FFF4E5;
+    color: #FF9F43;
+}
+
+.status-preparing {
+    background: #F3F3F3;
+    color: #576574;
+}
+
+.status-ontheway,
+.status-ready {
+    background: #E3F2FD;
+    color: #2E86DE;
+}
+
+.status-delivered,
+.status-picked-up {
+    background: #E8F5E9;
+    color: #27AE60;
+}
+
+.status-cancelled {
+    background: #FFEBEE;
+    color: #D63031;
+}
 
 /* General Customer badge styles, different from seller status badges */
-.badge { 
+.badge {
     background: var(--primary-light);
     color: var(--primary);
     padding: 2px 8px;
@@ -307,17 +379,31 @@ tbody tr:hover {
     font-weight: 800;
     margin-left: auto;
 }
+
 .sidebar-link.active .badge {
     background: rgba(255, 255, 255, 0.2);
     color: white;
 }
 
 /* Utilities */
-.hidden { display: none; }
-.fade-in { animation: fadeIn 0.4s ease-out; }
+.hidden {
+    display: none;
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Toast Notification */
@@ -340,6 +426,7 @@ tbody tr:hover {
     font-weight: 600;
     border-left: 5px solid var(--success);
 }
+
 .toast.show {
     transform: translateY(0);
     opacity: 1;
@@ -360,16 +447,25 @@ tbody tr:hover {
     border: 1px solid rgba(214, 48, 49, 0.2);
     animation: slideDown 0.3s ease-out;
 }
+
 .field-error.show {
     display: flex;
 }
+
 .field-error i {
     font-size: 14px;
 }
 
 @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Responsive Overrides & Components */
@@ -390,17 +486,22 @@ tbody tr:hover {
     .menu-toggle {
         display: block;
     }
+
     .navbar {
         padding: 0 20px;
     }
+
     .sidebar {
-        left: -300px; /* Hide off canvas */
+        left: -300px;
+        /* Hide off canvas */
         transition: left 0.3s ease-in-out;
-        box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.1);
     }
+
     .sidebar.open {
         left: 0;
     }
+
     .main-content {
         margin-left: 0;
         width: 100%;

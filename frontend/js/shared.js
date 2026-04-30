@@ -12,9 +12,9 @@ function showToast(msg, type = 'success') {
 
     const span = t.querySelector('span');
     const icon = t.querySelector('i');
-    
+
     if (span) span.innerText = msg;
-    
+
     // Update icon style based on type
     if (icon) {
         icon.className = 'fa-solid'; // Reset
@@ -34,7 +34,7 @@ function showToast(msg, type = 'success') {
     }
 
     t.classList.add('show');
-    
+
     // Auto-hide after 3 seconds
     setTimeout(() => {
         t.classList.remove('show');
