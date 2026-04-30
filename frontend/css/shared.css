@@ -98,7 +98,9 @@ h1, h2, h3, h4, h5, h6 {
 .nav-logo.gradient-text {
     background: var(--primary-gradient);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
+    color: transparent;
 }
 
 /* Sidebar (for portal pages) */
